@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101124">
+<title>MIZVO — Connect Beyond Boundaries</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101124;color:#fff;font-family:Arial,sans-serif}
+.app{max-width:480px;margin:auto;min-height:100vh;background:#15162d;padding:20px 16px 85px}
+header{display:flex;justify-content:space-between;align-items:center;margin:10px 0 25px}
+.logo{font-size:28px;font-weight:900;letter-spacing:3px;color:#a78bfa}
+.tag{font-size:11px;color:#aaa;margin-top:4px}
+.avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#ec4899);display:grid;place-items:center;font-weight:bold}
+h2{font-size:23px;margin:0 0 18px}
+.search{width:100%;padding:15px;border:1px solid #30314d;border-radius:14px;background:#20213b;color:white;font-size:15px;outline:none}
+.stories{display:flex;gap:16px;overflow:auto;margin:23px 0}
+.story{text-align:center;min-width:58px;font-size:11px;color:#bbb}
+.story .avatar{margin:auto auto 7px;border:2px solid #a78bfa}
+.section{display:flex;justify-content:space-between;align-items:center;margin:24px 0 12px}
+.section span{font-size:13px;color:#aaa}
+.chat{display:flex;align-items:center;gap:13px;padding:13px 2px;border-bottom:1px solid #292a43;cursor:pointer}
+.chat .avatar{flex-shrink:0}
+.info{flex:1;min-width:0}
+.info strong{font-size:14px}
+.info p{font-size:12px;color:#aaa;margin:6px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.time{font-size:10px;color:#aaa}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:flex;justify-content:space-around;background:#1c1d37;border-top:1px solid #30314d;padding:15px 5px}
+nav button{background:none;border:0;color:#aaa;font-size:12px;cursor:pointer}
+nav button.active{color:#b69aff}
+.screen{display:none}.screen.active{display:block}
+.message{padding:12px 15px;border-radius:15px;margin:10px 0;max-width:82%;background:#292a47;font-size:14px}
+.mine{margin-left:auto;background:#7047d7}
+.inputrow{display:flex;gap:8px;margin-top:20px}
+.inputrow input{flex:1;min-width:0;background:#22233e;color:white;border:0;border-radius:12px;padding:13px}
+.inputrow button{background:#8055e8;color:white;border:0;border-radius:12px;padding:12px}
+.back{background:none;border:0;color:#b69aff;font-size:16px;padding:12px 0}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div><div class="logo">MIZVO</div><div class="tag">Connect Beyond Boundaries.</div></div><div class="avatar">M</div></header>
+<section id="chats" class="screen active">
+<h2>Messages</h2>
+<input id="search" class="search" placeholder="Search conversations..." oninput="filterChats()">
+<div class="section"><strong>Stories</strong><span>See all</span></div>
+<div class="stories">
+<div class="story"><div class="avatar">+</div>Your story</div>
+<div class="story"><div class="avatar">A</div>Alex</div>
+<div class="story"><div class="avatar">S</div>Sophia</div>
+<div class="story"><div class="avatar">J</div>James</div>
+<div class="story"><div class="avatar">L</div>Lisa</div>
+</div>
+<div class="section"><strong>Recent Chats</strong><span>See all</span></div>
+<div id="chatlist">
+<div class="chat" onclick="openChat('Alex Morgan','A')"><div class="avatar">A</div><div class="info"><strong>Alex Morgan</strong><p>Hey! How are you?</p></div><div class="time">10:42</div></div>
+<div class="chat" onclick="openChat('Sophia Lee','S')"><div class="avatar">S</div><div class="info"><strong>Sophia Lee</strong><p>Sent you a photo 📷</p></div><div class="time">09:30</div></div>
+<div class="chat" onclick="openChat('James Wilson','J')"><div class="avatar">J</div><div class="info"><strong>James Wilson</strong><p>Let's talk later!</p></div><div class="time">Yesterday</div></div>
+<div class="chat" onclick="openChat('Lisa Brown','L')"><div class="avatar">L</div><div class="info"><strong>Lisa Brown</strong><p>Thank you ❤️</p></div><div class="time">Yesterday</div></div>
+</div>
+</section>
+<section id="conversation" class="screen">
+<button class="back" onclick="showScreen('chats')">← Back to chats</button>
+<h2 id="chatname">Conversation</h2>
+<div id="messages"><div class="message">Welcome to MIZVO demo! 👋</div><div class="message mine">Connect Beyond Boundaries.</div></div>
+<div class="inputrow"><input id="msg" placeholder="Write a message..."><button onclick="sendMsg()">Send</button></div>
+</section>
+<section id="stories" class="screen"><h2>Stories</h2><p>Your stories will appear here.</p><p>Share moments with your friends.</p></section>
+<section id="calls" class="screen"><h2>Calls</h2><p>Your recent calls will appear here.</p><p>Audio and video calling will be added later.</p></section>
+<section id="profile" class="screen"><h2>Your Profile</h2><div class="avatar">M</div><p>MIZVO User</p><p>Settings · Privacy · Account</p></section>
+</div>
+<nav>
+<button class="active" onclick="showScreen('chats',this)">Chats</button>
+<button onclick="showScreen('stories',this)">Stories</button>
+<button onclick="showScreen('calls',this)">Calls</button>
+<button onclick="showScreen('profile',this)">Profile</button>
+</nav>
+<script>
+function showScreen(id,btn){
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+if(btn){document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
+}
+function openChat(name,initial){
+document.getElementById('chatname').textContent=name;
+showScreen('conversation');
+}
+function sendMsg(){
+const input=document.getElementById('msg');
+if(!input.value.trim())return;
+const div=document.createElement('div');
+div.className='message mine';
+div.textContent=input.value;
+document.getElementById('messages').appendChild(div);
+input.value='';
+}
+function filterChats(){
+const q=document.getElementById('search').value.toLowerCase();
+document.querySelectorAll('#chatlist .chat').forEach(c=>{
+c.style.display=c.innerText.toLowerCase().includes(q)?'flex':'none';
+});
+}
+</script>
+</body>
+  </html>
