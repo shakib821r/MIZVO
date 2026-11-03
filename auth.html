@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIZVO | Account</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;
+background:#080d1c;color:#fff;font-family:Arial,sans-serif;padding:20px}
+.card{width:100%;max-width:390px;background:#111a30;padding:28px;
+border-radius:22px;border:1px solid #293653}
+.logo{text-align:center;font-size:36px;font-weight:900;color:#a78bfa}
+.sub{text-align:center;color:#aab4c9;margin:8px 0 25px}
+h2{text-align:center}
+input{width:100%;padding:15px;margin:8px 0;border-radius:10px;
+border:1px solid #34415d;background:#0b1325;color:white;font-size:15px}
+button{width:100%;padding:15px;margin-top:12px;border:0;border-radius:10px;
+background:#8061ed;color:white;font-weight:bold;font-size:16px}
+.switch{text-align:center;margin-top:20px;color:#b9a8ff;cursor:pointer}
+#message{text-align:center;font-size:14px;margin-top:16px;color:#b9c5df}
+</style>
+</head>
+<body>
+<div class="card">
+<div class="logo">MIZVO</div>
+<div class="sub">Connect Beyond Boundaries</div>
+
+<h2 id="heading">Create Account</h2>
+
+<form id="authForm">
+<input id="name" placeholder="Your name" required>
+<input id="email" type="email" placeholder="Email address" required>
+<input id="password" type="password" placeholder="Password (minimum 6 characters)" minlength="6" required>
+<button id="submitBtn" type="submit">Create Account</button>
+</form>
+
+<div class="switch" id="switchMode">Already have an account? Login</div>
+<div id="message"></div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://xpeslwtkzeybwydhzcls.supabase.co/rest/v1/";
+const SUPABASE_KEY = "sb_publishable_fvQoiONlnGaYpOKg7ao3qw_xLs00O_6";
+
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let isSignup = true;
+
+const form = document.getElementById("authForm");
+const nameInput = document.getElementById("name");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const heading = document.getElementById("heading");
+const submitBtn = document.getElementById("submitBtn");
+const switchMode = document.getElementById("switchMode");
+const message = document.getElementById("message");
+
+switchMode.addEventListener("click", () => {
+  isSignup = !isSignup;
+  heading.textContent = isSignup ? "Create Account" : "Welcome Back";
+  submitBtn.textContent = isSignup ? "Create Account" : "Login";
+  nameInput.style.display = isSignup ? "block" : "none";
+  nameInput.required = isSignup;
+  switchMode.textContent = isSignup
+    ? "Already have an account? Login"
+    : "New to MIZVO? Create Account";
+  message.textContent = "";
+});
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  message.textContent = "Please wait...";
+  submitBtn.disabled = true;
+
+  try {
+    let result;
+
+    if (isSignup) {
+      result = await client.auth.signUp({
+        email: emailInput.value.trim(),
+        password: passwordInput.value,
+        options: {
+          data: {
+            display_name: nameInput.value.trim()
+          }
+        }
+      });
+
+      if (result.error) throw result.error;
+
+      message.textContent = result.data.session
+        ? "Account created successfully!"
+        : "Account created! Check your email to verify your account.";
+    } else {
+      result = await client.auth.signInWithPassword({
+        email: emailInput.value.trim(),
+        password: passwordInput.value
+      });
+
+      if (result.error) throw result.error;
+
+      message.textContent = "Login successful! Welcome to MIZVO.";
+    }
+  } catch (error) {
+    message.textContent = error.message;
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+nameInput.style.display = "block";
+</script>
+</body>
+  </html>
