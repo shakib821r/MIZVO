@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101124">
 <title>MIZVO — Connect Beyond Boundaries</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#101124;color:#fff;font-family:Arial,sans-serif}
@@ -36,11 +37,26 @@ nav button.active{color:#b69aff}
 .inputrow input{flex:1;min-width:0;background:#22233e;color:white;border:0;border-radius:12px;padding:13px}
 .inputrow button{background:#8055e8;color:white;border:0;border-radius:12px;padding:12px}
 .back{background:none;border:0;color:#b69aff;font-size:16px;padding:12px 0}
+
+/* ---- Auth additions (loading screen, profile details, logout) ---- */
+body.locked .app,body.locked nav{display:none}
+#loader{display:none;min-height:100vh;place-items:center;text-align:center;padding:24px;color:#b9c5df;font-size:15px;line-height:1.6}
+body.locked #loader{display:grid}
+#loader a{color:#b69aff}
+#profile .avatar{margin-bottom:12px}
+#profileEmail{color:#aaa;font-size:13px;overflow-wrap:anywhere}
+.logout{width:100%;margin-top:22px;padding:14px;border:0;border-radius:12px;background:#34415d;color:#fff;font-weight:bold;font-size:15px;cursor:pointer}
+.logout:disabled{opacity:.5;cursor:not-allowed}
+#profileMsg{color:#f4a7a7;font-size:13px;margin-top:12px;overflow-wrap:anywhere}
 </style>
 </head>
-<body>
+<body class="locked">
+
+<div id="loader"><div id="loaderText">Checking your login...</div></div>
+
 <div class="app">
-<header><div><div class="logo">MIZVO</div><div class="tag">Connect Beyond Boundaries.</div></div><div class="avatar">M</div></header>
+<header><div><div class="logo">MIZVO</div><div class="tag">Connect Beyond Boundaries.</div></div><div class="avatar" id="headerAvatar">M</div></header>
+
 <section id="chats" class="screen active">
 <h2>Messages</h2>
 <input id="search" class="search" placeholder="Search conversations..." oninput="filterChats()">
@@ -60,23 +76,38 @@ nav button.active{color:#b69aff}
 <div class="chat" onclick="openChat('Lisa Brown','L')"><div class="avatar">L</div><div class="info"><strong>Lisa Brown</strong><p>Thank you ❤️</p></div><div class="time">Yesterday</div></div>
 </div>
 </section>
+
 <section id="conversation" class="screen">
 <button class="back" onclick="showScreen('chats')">← Back to chats</button>
 <h2 id="chatname">Conversation</h2>
 <div id="messages"><div class="message">Welcome to MIZVO demo! 👋</div><div class="message mine">Connect Beyond Boundaries.</div></div>
 <div class="inputrow"><input id="msg" placeholder="Write a message..."><button onclick="sendMsg()">Send</button></div>
 </section>
+
 <section id="stories" class="screen"><h2>Stories</h2><p>Your stories will appear here.</p><p>Share moments with your friends.</p></section>
+
 <section id="calls" class="screen"><h2>Calls</h2><p>Your recent calls will appear here.</p><p>Audio and video calling will be added later.</p></section>
-<section id="profile" class="screen"><h2>Your Profile</h2><div class="avatar">M</div><p>MIZVO User</p><p>Settings · Privacy · Account</p></section>
+
+<section id="profile" class="screen">
+<h2>Your Profile</h2>
+<div class="avatar" id="profileAvatar">M</div>
+<p id="profileName">MIZVO User</p>
+<p id="profileEmail"></p>
+<p>Settings · Privacy · Account</p>
+<button type="button" class="logout" id="logoutBtn" onclick="logout()">Log out</button>
+<div id="profileMsg"></div>
+</section>
 </div>
+
 <nav>
 <button class="active" onclick="showScreen('chats',this)">Chats</button>
 <button onclick="showScreen('stories',this)">Stories</button>
 <button onclick="showScreen('calls',this)">Calls</button>
 <button onclick="showScreen('profile',this)">Profile</button>
 </nav>
+
 <script>
+/* ---------- Existing demo functions (unchanged) ---------- */
 function showScreen(id,btn){
 document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
 document.getElementById(id).classList.add('active');
@@ -101,6 +132,74 @@ document.querySelectorAll('#chatlist .chat').forEach(c=>{
 c.style.display=c.innerText.toLowerCase().includes(q)?'flex':'none';
 });
 }
+
+/* ---------- Supabase login check (new) ---------- */
+const SUPABASE_URL = "https://xpeslwtkzeybwydhzcls.supabase.co";
+const SUPABASE_KEY = "sb_publishable_fvQoiONlnGaYpOKg7ao3qw_xLs00O_6";
+let client = null;
+
+function goToAuth(){
+window.location.replace("auth.html");
+}
+
+function showLoaderError(text){
+const box = document.getElementById("loaderText");
+box.textContent = text + " ";
+const link = document.createElement("a");
+link.href = "auth.html";
+link.textContent = "Go to login page";
+box.appendChild(link);
+}
+
+function showApp(user){
+const meta = user.user_metadata || {};
+const name = (meta.display_name || "").trim() || (user.email ? user.email.split("@")[0] : "MIZVO User");
+const initial = name.charAt(0).toUpperCase() || "M";
+document.getElementById("headerAvatar").textContent = initial;
+document.getElementById("profileAvatar").textContent = initial;
+document.getElementById("profileName").textContent = name;
+document.getElementById("profileEmail").textContent = user.email || "";
+document.body.classList.remove("locked");
+}
+
+async function logout(){
+const btn = document.getElementById("logoutBtn");
+const msg = document.getElementById("profileMsg");
+msg.textContent = "";
+btn.disabled = true;
+try{
+const { error } = await client.auth.signOut();
+if (error) throw error;
+goToAuth();
+}catch(err){
+msg.textContent = "Logout failed: " + err.message;
+btn.disabled = false;
+}
+}
+
+async function initAuth(){
+if (typeof supabase === "undefined"){
+showLoaderError("Could not load the login service. Check your internet connection and refresh the page.");
+return;
+}
+client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+client.auth.onAuthStateChange((event)=>{
+if (event === "SIGNED_OUT") goToAuth();
+});
+try{
+const { data, error } = await client.auth.getSession();
+if (error) throw error;
+if (!data.session){
+goToAuth();
+return;
+}
+showApp(data.session.user);
+}catch(err){
+showLoaderError("Could not check your login: " + err.message + ".");
+}
+}
+
+initAuth();
 </script>
 </body>
-  </html>
+</html>
