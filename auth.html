@@ -61,6 +61,38 @@ const heading = document.getElementById("heading");
 const submitBtn = document.getElementById("submitBtn");
 const switchMode = document.getElementById("switchMode");
 const message = document.getElementById("message");
+  const resendBtn = document.getElementById("resendBtn");
+
+resendBtn.addEventListener("click", async () => {
+  const email = emailInput.value.trim();
+
+  if (!email) {
+    message.textContent = "Please enter your email address first.";
+    return;
+  }
+
+  resendBtn.disabled = true;
+  message.textContent = "Sending verification email...";
+
+  try {
+    const { error } = await client.auth.resend({
+      type: "signup",
+      email: email,
+      options: {
+        emailRedirectTo: "https://shakib821r.github.io/MIZVO/"
+      }
+    });
+
+    if (error) throw error;
+
+    message.textContent =
+      "Verification email requested. Please check your inbox and spam folder.";
+  } catch (error) {
+    message.textContent = error.message;
+  } finally {
+    resendBtn.disabled = false;
+  }
+});
 
 switchMode.addEventListener("click", () => {
   isSignup = !isSignup;
