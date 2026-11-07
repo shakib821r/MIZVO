@@ -28,3 +28,12 @@
 
 ## D-008 — Verify uploads on GitHub (2026-11-07)
 - After each upload, check for duplicate "(1)" files and the line count of the changed file.
+
+## D-009 — About MIZVO and Founder card built together (2026-11-07, approved by the founder)
+- Same screen and same file (`index.html`), so Priority 4 and 5 were delivered in one update.
+
+## D-010 — Public information policy (2026-11-07, decided by the founder)
+- The repository and site are public. The founder approved publishing his portrait, name and title.
+- Contact is a dedicated email (mizvo.official@gmail.com); the phone number is not published (spam and scam risk, hard to remove from GitHub history).
+- The photo is re-encoded without EXIF metadata before upload.
+- Only content supplied by the founder is shown; nothing about the founder is invented.

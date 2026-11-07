@@ -16,9 +16,12 @@
   - Reads the link before the client starts; shows the form only after Supabase's PASSWORD_RECOVERY event (or a session with a recovery link).
   - updateUser({ password }) → signOut → `auth.html#password-updated`.
   - Invalid or expired link → message and "Request a new link" (`auth.html#forgot`).
-- `index.html` — main app (demo UI).
+- `index.html` — main app.
   - On load: `getSession()`. No session → `auth.html`. Session → show app, name and email in Profile.
+  - Screens (switched by `showScreen`): chats, conversation, stories, calls, profile, about. Chat data is static demo content.
+  - Profile → About MIZVO opens the `about` screen (founder card, Our Vision, Our Mission, Contact). Static text; the founder photo is `founder.jpg` with a letter fallback.
   - Log out → `signOut()` → `auth.html`. A SIGNED_OUT event also redirects to `auth.html`.
+- `founder.jpg` — static image served by GitHub Pages.
 
 ## Authentication facts
 - Email confirmation is required for new accounts (confirmation link redirects to the site root).
