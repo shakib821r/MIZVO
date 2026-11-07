@@ -43,3 +43,23 @@
 - Setup: sender and username mizvo.official@gmail.com, Google App Password (2-Step Verification on). The App Password lives only in the Supabase dashboard; never in code, GitHub or chat.
 - Trade-offs: Supabase warns Gmail is a personal, not transactional, provider; test email landed in Spam; daily sending cap (about 500 per day per a third-party source, not verified).
 - Revisit: move to a domain-based provider (for example Brevo) when a domain is affordable; this needs the founder's approval.
+
+## D-012 — Extend the existing profiles table instead of recreating it (2026-11-07)
+- The table already existed with 3 real rows, 2 policies and a signup trigger. Dropping it could lose data, so it was extended with `ALTER TABLE`.
+- Columns now: id (links to the auth user, deleted with the user), username (unique, 3–20 characters of a–z, 0–9, `_`, empty allowed), display_name (max 50), status (max 140), avatar_url, created_at, updated_at.
+- Row Level Security: signed-in users can read all profiles (approved by the founder, needed to find people and open chats); users can update only their own row; nobody can delete; visitors who are not signed in have no access.
+- The profiles table never stores the email address; a QR code will contain only a username-based profile link.
+- The profile row is created by the database trigger on signup, so the frontend does not create it.
+
+## D-013 — Profile screen wiring is done in the redesign (2026-11-07)
+- `index.html` does not read the profile yet. The Profile screen will be rewritten in the approved new design, so wiring it now would be thrown away.
+
+## D-014 — Test security rules inside a rolled-back SQL block (2026-11-07)
+- Row Level Security is tested in the SQL Editor by acting as a user and finishing with an intentional error, so no data changes. The founder-approved result is recorded in PROJECT_CONTEXT.md.
+
+## D-015 — Cut display names to 50 characters inside the signup trigger (2026-11-07)
+- Reason: the 50-character rule on `display_name` must never make account creation fail (BUG-008). The check lives in the database so it cannot be bypassed from the browser.
+
+## D-016 — Staged redesign with founder approval at each stage (2026-11-07)
+- The brand identity and UI/UX redesign follows the founder's master prompt: audit, three creative directions, five design signatures and design system, screen designs, implementation, testing, documentation. No design is final without the founder's approval.
+- Messaging (Step C) is built after the redesign so the chat screens are made once, in the new design.

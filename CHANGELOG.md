@@ -1,6 +1,11 @@
 # MIZVO — Changelog
 
 ## 2026-11-07
+- Database (Step B), run by the founder in the Supabase SQL Editor:
+  - Found that `public.profiles` already existed (id, display_name, avatar_url, created_at; 3 rows; read-all and update-own policies; signup trigger). Kept all data and policies.
+  - Added columns `username` (unique, 3–20 chars of a–z, 0–9, _), `status` (max 140), `updated_at`; added length checks; revoked anonymous access and delete; added an `updated_at` trigger.
+  - Tested the security rules with a rolled-back script (read all, no editing of others, no delete, username format, anonymous blocked): all passed.
+  - Changed the signup trigger function `handle_new_user` to cut `display_name` to 50 characters (BUG-008).
 - Email delivery:
   - Supabase dashboard: enabled custom SMTP with Gmail (mizvo.official@gmail.com, sender name MIZVO). Credentials stored only in Supabase.
   - `auth.html`: signup success message now also says to check the Spam folder.

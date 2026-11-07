@@ -34,6 +34,26 @@
 - Never place service_role or secret keys in frontend code.
 - When database tables are added: enable Row Level Security on every table and write explicit policies.
 
+## Database (Supabase Postgres)
+- Table `public.profiles` (one row per user):
+  - `id` uuid, primary key, references `auth.users(id)` on delete cascade
+  - `username` text, unique, format `^[a-z0-9_]{3,20}$`, may be empty
+  - `display_name` text, max 50 characters
+  - `status` text, max 140 characters
+  - `avatar_url` text
+  - `created_at`, `updated_at` (kept current by trigger `profiles_set_updated_at`)
+- Row Level Security is ON. Policies: "Authenticated users can view profiles" (select, all rows), "Users can update own profile" (update, own row only). No insert policy (the trigger inserts) and no delete.
+- Access: `anon` has no access; `authenticated` cannot delete.
+- Trigger `on_auth_user_created` on `auth.users` runs `public.handle_new_user()` (security definer, empty search_path): inserts the profile row with the display name from signup metadata, trimmed to 50 characters.
+- Email addresses are never stored in `profiles`.
+- `index.html` does not read this table yet (planned for the redesign).
+- SQL is run in the Supabase SQL Editor as role `postgres`. Always inspect first with read-only queries.
+
+## Platform limits (free plan; third-party summaries, recheck in Supabase documentation)
+- Database 500 MB, file storage 1 GB, 50,000 monthly active users.
+- Realtime: about 200 concurrent connections and 2 million messages per month.
+- Project pauses after about one week of inactivity.
+
 ## Email
 - Supabase Auth emails (signup confirmation, password reset) are sent through custom SMTP: Gmail, sender mizvo.official@gmail.com, sender name MIZVO.
 - The App Password is stored only in the Supabase dashboard (SMTP settings).

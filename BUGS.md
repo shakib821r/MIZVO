@@ -36,3 +36,14 @@
 - Likely factors (not confirmed): very short default email template, new sender with no history, personal Gmail account used as the sender (Supabase warns that it is a personal rather than transactional provider).
 - Mitigation done: the signup message tells users to check the Spam folder (the resend and reset messages already did).
 - Possible next steps: improve the email templates in the Supabase dashboard (free, no guarantee); domain-based sending (costs money, needs approval).
+
+## BUG-008 — Long display name could break signup (found and fixed 2026-11-07)
+- Status: Fixed (verified by reading the function source; not yet tested with a real signup).
+- Cause: a rule added to `public.profiles` limits `display_name` to 50 characters, but the signup trigger `handle_new_user` copied the name without cutting it, so a name longer than 50 characters could make account creation fail.
+- Fix: the trigger now uses `left(..., 50)`.
+- Follow-up: test a real signup with a long name during the next test round.
+
+## BUG-009 — Free Supabase project pauses after inactivity (open risk)
+- Status: Open (platform limit, not a code bug).
+- Third-party pricing guides say free projects pause after about one week of inactivity. A paused project makes the app stop working until it is restored from the Supabase dashboard.
+- Mitigation: check the project regularly; confirm the rule on Supabase's official pricing page; plan before real users arrive (any paid option needs the founder's approval).
