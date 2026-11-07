@@ -48,6 +48,23 @@ body.locked #loader{display:grid}
 .logout{width:100%;margin-top:22px;padding:14px;border:0;border-radius:12px;background:#34415d;color:#fff;font-weight:bold;font-size:15px;cursor:pointer}
 .logout:disabled{opacity:.5;cursor:not-allowed}
 #profileMsg{color:#f4a7a7;font-size:13px;margin-top:12px;overflow-wrap:anywhere}
+
+/* ---- About MIZVO (Founder, Vision, Mission, Contact) ---- */
+.aboutbtn{width:100%;margin-top:18px;padding:14px 16px;border:1px solid #30314d;border-radius:12px;background:#20213b;color:#fff;font-size:15px;font-weight:bold;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.aboutbtn span{color:#b69aff}
+.founder{text-align:center;padding:26px 18px 22px;border-radius:22px;background:linear-gradient(160deg,#241b4a,#1c1d37 60%);border:1px solid #30314d;margin-bottom:16px}
+.founder-ring{width:132px;height:132px;margin:0 auto 16px;border-radius:50%;padding:4px;background:linear-gradient(135deg,#8b5cf6,#ec4899)}
+.founder-photo{width:100%;height:100%;border-radius:50%;object-fit:cover;object-position:center 15%;display:block;background:#fff}
+.founder-fallback{display:none;width:100%;height:100%;border-radius:50%;background:#15162d;place-items:center;font-size:44px;font-weight:bold;color:#fff}
+.founder h3{margin:0 0 10px;font-size:22px}
+.badge{display:inline-block;padding:6px 14px;border-radius:999px;background:rgba(167,139,250,.16);border:1px solid #6d54c9;color:#cdbcff;font-size:11px;font-weight:bold;letter-spacing:2px}
+.founder .org{margin:12px 0 0;color:#aab4c9;font-size:13px}
+.about-card{background:#1c1d37;border:1px solid #30314d;border-radius:18px;padding:20px;margin-bottom:16px}
+.about-card .label{font-size:11px;letter-spacing:2px;color:#a78bfa;font-weight:bold;margin:0 0 8px}
+.about-card h3{margin:0 0 12px;font-size:19px;line-height:1.35}
+.about-card p{margin:0 0 12px;color:#c9d0e4;font-size:14px;line-height:1.7}
+.about-card p:last-child{margin-bottom:0}
+.about-card a{color:#b69aff;overflow-wrap:anywhere}
 </style>
 </head>
 <body class="locked">
@@ -94,8 +111,45 @@ body.locked #loader{display:grid}
 <p id="profileName">MIZVO User</p>
 <p id="profileEmail"></p>
 <p>Settings · Privacy · Account</p>
+<button type="button" class="aboutbtn" onclick="showScreen('about')">About MIZVO <span>›</span></button>
 <button type="button" class="logout" id="logoutBtn" onclick="logout()">Log out</button>
 <div id="profileMsg"></div>
+</section>
+
+<section id="about" class="screen">
+<button class="back" onclick="showScreen('profile')">← Back to Profile</button>
+<h2>About MIZVO</h2>
+
+<div class="founder">
+<div class="founder-ring">
+<img class="founder-photo" src="founder.jpg" width="124" height="124" loading="lazy"
+alt="Md Nazmus Shakib, Founder and CEO of MIZVO"
+onerror="this.style.display='none';document.getElementById('founderFallback').style.display='grid'">
+<div class="founder-fallback" id="founderFallback">M</div>
+</div>
+<h3>Md Nazmus Shakib</h3>
+<div class="badge">FOUNDER &amp; CEO</div>
+<p class="org">MIZVO</p>
+</div>
+
+<div class="about-card">
+<p class="label">OUR VISION</p>
+<h3>Connecting People. Bringing the World Closer.</h3>
+<p>At MIZVO, we envision a world where distance never limits human connection.</p>
+<p>Our vision is to build a smarter, safer, and more connected world through seamless digital communication. We aim to bring people closer through innovative messaging technology, meaningful conversations, and reliable communication experiences.</p>
+<p>We believe communication should be simple, private, accessible, and effortless for everyone, everywhere.</p>
+<p>MIZVO is more than a messaging platform. It is a vision of a world without communication barriers, where every connection matters and every conversation brings us closer.</p>
+</div>
+
+<div class="about-card">
+<p class="label">OUR MISSION</p>
+<p>To empower people worldwide with modern, secure, and seamless communication tools that make connecting, sharing, and staying together easier than ever.</p>
+</div>
+
+<div class="about-card">
+<p class="label">CONTACT</p>
+<p><a href="mailto:mizvo.official@gmail.com">mizvo.official@gmail.com</a></p>
+</div>
 </section>
 </div>
 
