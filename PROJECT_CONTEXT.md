@@ -12,7 +12,7 @@ Last updated: 2026-11-07
 
 ## Files in the repository
 - `index.html` — main app screen (demo chat UI with static data). Checks the Supabase session, Profile shows name and email, About MIZVO screen, Log out.
-- `auth.html` — Login (default), Create Account, Resend Verification Email, Forgot Password (reset link request). Redirects to `index.html` after login or when a session exists.
+- `auth.html` — Login (default), Create Account, Resend Verification Email, Forgot Password (reset link request). Redirects to `index.html` after login or when a session exists. Signup message reminds users to check the Spam folder.
 - `reset.html` — set a new password after opening the emailed reset link.
 - `founder.jpg` — founder's portrait for the About MIZVO screen (re-encoded, no EXIF data).
 - `README.md`
@@ -23,16 +23,20 @@ Last updated: 2026-11-07
 ### Completed and tested (reported by the founder)
 - Signup with a new email: verification email received, link opens the site.
 - Login, logout, session persistence, wrong-password message (2026-11-07).
-- Forgot Password: reset link email, new password page, password changed, login with the new password, reused link shows an expired message — all 8 tests reported OK (2026-11-07).
-- About MIZVO (Profile → About MIZVO): founder photo, name and "Founder & CEO", Our Vision, Our Mission, contact email, back navigation — all 5 tests reported OK (2026-11-07).
+- Forgot Password: all 8 tests reported OK (2026-11-07).
+- About MIZVO (Profile → About MIZVO): all 5 tests reported OK (2026-11-07).
+- Custom SMTP (Gmail) enabled in Supabase. Test with a new outside email address: the verification email arrived from sender "Mizvo" but in the Spam folder; the confirm link worked and signed the user into MIZVO (2026-11-07).
+- Signup message now tells users to check the Spam folder (founder reported done, 2026-11-07).
 
-### Pending (next step to be chosen by the founder)
-- Fix email delivery for real users with a free custom SMTP provider (BUG-002)
-- User profiles table with Row Level Security
-- Real messaging (database tables, realtime), groups, media, notifications
+### Pending (order agreed with the founder: A done, then B, then C)
+- Step B: user profiles table with Row Level Security
+- Step C: one-to-one messaging with Supabase Realtime (founder to decide on encryption approach first)
+- Optional: improve the confirmation / reset email templates in the Supabase dashboard (may reduce spam placement, no guarantee)
+- Later: domain-based email sending (needs a purchased domain; requires the founder's approval)
 
-### Blocked / open risks
-- Custom SMTP is OFF in Supabase. The default email service has strict limits (see BUGS.md BUG-002). Verification and reset emails reached the founder's test addresses, but delivery to outside users at scale is not verified.
+### Open risks
+- Auth emails can land in Spam (BUG-007). Gmail is a personal mail service; Supabase warns about deliverability.
+- Gmail sending limits: a third-party source says about 500 emails per day; not verified with Google's own documentation.
 
 ## Public information shown in the app
 - Founder name "Md Nazmus Shakib", title "Founder & CEO", portrait photo (approved by the founder to be public).
@@ -41,7 +45,7 @@ Last updated: 2026-11-07
 - Vision and Mission text is exactly as written by the founder.
 
 ## Supabase configuration (set and checked by the founder in the dashboard)
-- Custom SMTP: OFF
+- Custom SMTP: ON — Gmail (host smtp.gmail.com), sender and username mizvo.official@gmail.com, sender name MIZVO. The Gmail App Password is stored only in the Supabase dashboard and must never be shared or committed.
 - Site URL: https://shakib821r.github.io/MIZVO/
 - Redirect URLs: https://shakib821r.github.io/MIZVO/ and https://shakib821r.github.io/MIZVO/reset.html
 - Only the publishable key is used in frontend code. service_role / secret keys must never be placed in frontend code.
@@ -51,5 +55,5 @@ Last updated: 2026-11-07
 - Lesson: Android may rename a downloaded file to "name (1).html" when an older copy exists. GitHub then keeps both files and the live site keeps using the old one. Delete old copies from Downloads before downloading, and check the file list and line count after uploading (see BUGS.md BUG-006).
 
 ## Not verified
-- Email delivery to addresses outside the Supabase team at larger scale.
 - Exact root cause of the earlier "cannot login after logout" bug (best explanation in BUGS.md BUG-001; fix confirmed working).
+- Why the verification email went to Spam (see BUGS.md BUG-007).

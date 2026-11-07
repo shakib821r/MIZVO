@@ -34,6 +34,10 @@
 - Never place service_role or secret keys in frontend code.
 - When database tables are added: enable Row Level Security on every table and write explicit policies.
 
+## Email
+- Supabase Auth emails (signup confirmation, password reset) are sent through custom SMTP: Gmail, sender mizvo.official@gmail.com, sender name MIZVO.
+- The App Password is stored only in the Supabase dashboard (SMTP settings).
+
 ## Known limits
-- Default Supabase email service (custom SMTP is off): see BUGS.md BUG-002.
+- Gmail is a personal mail service: auth emails can land in Spam and there is a daily sending cap (BUGS.md BUG-002, BUG-007).
 - Chat data in `index.html` is static demo content.

@@ -1,6 +1,9 @@
 # MIZVO — Changelog
 
 ## 2026-11-07
+- Email delivery:
+  - Supabase dashboard: enabled custom SMTP with Gmail (mizvo.official@gmail.com, sender name MIZVO). Credentials stored only in Supabase.
+  - `auth.html`: signup success message now also says to check the Spam folder.
 - About MIZVO:
   - `index.html`: Profile → "About MIZVO" button, new About screen (founder card with photo, name and "Founder & CEO"; Our Vision; Our Mission; Contact email) and a Back button. Photo falls back to an initial if it cannot load. Existing login, logout and demo UI unchanged.
   - `founder.jpg` (new): founder portrait, re-encoded to about 20 KB with no EXIF data.

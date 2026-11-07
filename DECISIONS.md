@@ -37,3 +37,9 @@
 - Contact is a dedicated email (mizvo.official@gmail.com); the phone number is not published (spam and scam risk, hard to remove from GitHub history).
 - The photo is re-encoded without EXIF metadata before upload.
 - Only content supplied by the founder is shown; nothing about the founder is invented.
+
+## D-011 — Gmail SMTP for Supabase auth emails (2026-11-07, approved by the founder)
+- Reason: the default Supabase email service only reaches team members and has a very low hourly limit. Gmail SMTP is free and needs no domain, which fits the ৳0 budget.
+- Setup: sender and username mizvo.official@gmail.com, Google App Password (2-Step Verification on). The App Password lives only in the Supabase dashboard; never in code, GitHub or chat.
+- Trade-offs: Supabase warns Gmail is a personal, not transactional, provider; test email landed in Spam; daily sending cap (about 500 per day per a third-party source, not verified).
+- Revisit: move to a domain-based provider (for example Brevo) when a domain is affordable; this needs the founder's approval.
