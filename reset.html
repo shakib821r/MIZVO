@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIZVO | Reset Password</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+body{
+margin:0;min-height:100vh;display:grid;place-items:center;
+background:#080d1c;color:white;font-family:Arial,sans-serif;padding:20px
+}
+.card{
+width:100%;max-width:390px;background:#111a30;padding:28px;
+border-radius:22px;border:1px solid #293653
+}
+.logo{text-align:center;font-size:36px;font-weight:900;color:#a78bfa}
+.sub{text-align:center;color:#aab4c9;margin:8px 0 25px}
+h2{text-align:center}
+input{
+width:100%;padding:15px;margin:8px 0;border-radius:10px;
+border:1px solid #34415d;background:#0b1325;color:white;font-size:15px
+}
+button{
+width:100%;padding:15px;margin-top:12px;border:0;border-radius:10px;
+background:#8061ed;color:white;font-weight:bold;font-size:15px;
+cursor:pointer
+}
+button:disabled{opacity:.5;cursor:not-allowed}
+.switch{text-align:center;margin-top:20px;color:#b9a8ff;cursor:pointer}
+.status{text-align:center;color:#b9c5df;font-size:14px;line-height:1.6;overflow-wrap:anywhere}
+#message{text-align:center;font-size:14px;margin-top:16px;color:#b9c5df;overflow-wrap:anywhere}
+.hidden{display:none}
+</style>
+</head>
+<body>
+
+<div class="card">
+<div class="logo">MIZVO</div>
+<div class="sub">Connect Beyond Boundaries</div>
+
+<h2 id="heading">Reset Password</h2>
+
+<!-- Shown while the reset link is being checked, or when the link is invalid/expired -->
+<div id="statusBox">
+<div class="status" id="statusText">Checking your reset link...</div>
+<button type="button" id="newLinkBtn" class="hidden">Request a new link</button>
+</div>
+
+<!-- Shown only after a valid recovery link has been confirmed -->
+<form id="resetForm" class="hidden">
+<input id="newPassword" type="password" autocomplete="new-password"
+placeholder="New password (minimum 6 characters)" minlength="6" required>
+<input id="confirmPassword" type="password" autocomplete="new-password"
+placeholder="Confirm new password" minlength="6" required>
+<button id="updateBtn" type="submit">Update Password</button>
+</form>
+
+<div class="switch" id="backToLogin">Back to Login</div>
+<div id="message"></div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://xpeslwtkzeybwydhzcls.supabase.co";
+const SUPABASE_KEY = "sb_publishable_fvQoiONlnGaYpOKg7ao3qw_xLs00O_6";
+
+// Read the link information BEFORE the Supabase client starts, so nothing is lost.
+const linkParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+const linkHadError = Boolean(linkParams.get("error") || linkParams.get("error_description"));
+const linkIsRecovery = linkParams.get("type") === "recovery";
+
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const statusBox = document.getElementById("statusBox");
+const statusText = document.getElementById("statusText");
+const newLinkBtn = document.getElementById("newLinkBtn");
+const resetForm = document.getElementById("resetForm");
+const newPassword = document.getElementById("newPassword");
+const confirmPassword = document.getElementById("confirmPassword");
+const updateBtn = document.getElementById("updateBtn");
+const message = document.getElementById("message");
+const backToLogin = document.getElementById("backToLogin");
+
+let formShown = false;
+let finished = false;
+let passwordUpdated = false;
+
+function showForm(){
+if (formShown || passwordUpdated) return;
+formShown = true;
+newLinkBtn.classList.add("hidden");
+statusBox.classList.add("hidden");
+resetForm.classList.remove("hidden");
+// Remove the one-time tokens from the address bar and browser history
+try { history.replaceState(null, "", window.location.pathname); } catch (e) {}
+}
+
+function showExpired(){
+if (formShown || finished) return;
+finished = true;
+statusText.textContent = "This reset link is invalid, already used, or has expired. Please request a new one.";
+newLinkBtn.classList.remove("hidden");
+}
+
+function friendlyError(error){
+const text = (error && error.message) ? error.message : "Something went wrong. Please try again.";
+const lower = text.toLowerCase();
+if (lower.includes("different from the old password")) {
+return "Please choose a password you have not used before.";
+}
+if (lower.includes("session missing") || lower.includes("expired") || lower.includes("invalid")) {
+return "Your reset link has expired. Please request a new one.";
+}
+if (lower.includes("failed to fetch") || lower.includes("network")) {
+return "Network problem. Check your internet connection and try again.";
+}
+return text;
+}
+
+backToLogin.addEventListener("click", () => {
+window.location.href = "auth.html";
+});
+
+newLinkBtn.addEventListener("click", () => {
+window.location.href = "auth.html#forgot";
+});
+
+// Supabase tells us when a valid recovery link has been opened
+client.auth.onAuthStateChange((event) => {
+if (event === "PASSWORD_RECOVERY") showForm();
+});
+
+resetForm.addEventListener("submit", async (e) => {
+e.preventDefault();
+message.textContent = "";
+
+if (newPassword.value.length < 6) {
+message.textContent = "Password must be at least 6 characters.";
+return;
+}
+if (newPassword.value !== confirmPassword.value) {
+message.textContent = "The two passwords do not match.";
+return;
+}
+
+updateBtn.disabled = true;
+message.textContent = "Updating password...";
+
+try {
+const { error } = await client.auth.updateUser({ password: newPassword.value });
+if (error) throw error;
+
+passwordUpdated = true;
+message.textContent = "Password updated! Taking you to Login...";
+try { await client.auth.signOut(); } catch (err) {
+console.error("MIZVO signOut after reset:", err && err.message);
+}
+window.location.replace("auth.html#password-updated");
+} catch (error) {
+console.error("MIZVO reset error:", error && error.code, error && error.message);
+message.textContent = friendlyError(error);
+updateBtn.disabled = false;
+}
+});
+
+(async () => {
+if (linkHadError) {
+showExpired();
+return;
+}
+try {
+const { data } = await client.auth.getSession();
+if (data && data.session && linkIsRecovery) showForm();
+} catch (error) {
+console.error("MIZVO session check error:", error && error.message);
+}
+// If no valid recovery link was detected shortly after loading, treat it as invalid
+setTimeout(showExpired, 4000);
+})();
+</script>
+</body>
+</html>
