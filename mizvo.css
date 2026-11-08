@@ -1,0 +1,51 @@
+/* MIZVO design foundation: tokens, themes and shared components. Direction B (Halves). */
+:root{
+--bg:#EEF6F3;--surface:#FFFFFF;--ink:#1B2B2B;--muted:#4F6767;--line:#CFE0DB;--field:#6F8C8A;
+--primary:#0F3D3E;--on-primary:#FFFFFF;--mint:#8FE3C8;--logo-left:#0F3D3E;--logo-right:#35B894;--danger:#B3261E;
+--font-head:Sora,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+--font-body:Manrope,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+color-scheme:light;
+}
+:root[data-theme="dark"]{
+--bg:#0B1F20;--surface:#112B2C;--ink:#E6F2EF;--muted:#9DB8B3;--line:#234546;--field:#5E8683;
+--primary:#8FE3C8;--on-primary:#0B1F20;--mint:#8FE3C8;--logo-left:#E6F2EF;--logo-right:#8FE3C8;--danger:#FF8A80;
+color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--font-body)}
+h1,h2{font-family:var(--font-head);font-weight:600;margin:0}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+
+.m-page{max-width:420px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;gap:14px;
+padding:max(28px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left))}
+.m-title{font-size:32px;line-height:1.2}
+.m-sub{margin:0;color:var(--muted)}
+.m-field{display:flex;flex-direction:column;gap:6px}
+.m-field label{font-size:13px;color:var(--muted)}
+.m-input{width:100%;height:48px;border:1px solid var(--field);border-radius:999px;padding:0 18px;background:var(--surface);color:var(--ink);font-family:inherit;font-size:16px}
+.m-pw{position:relative}
+.m-pw .m-input{padding-right:84px}
+.m-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);height:36px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:var(--muted);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.m-btn{height:52px;width:100%;border:0;border-radius:999px;background:var(--primary);color:var(--on-primary);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px}
+.m-btn:disabled{opacity:.5;cursor:not-allowed}
+.m-link{background:none;border:0;padding:10px 0;color:var(--ink);font-family:inherit;font-size:14px;text-decoration:underline;cursor:pointer;text-align:center}
+.m-link.right{align-self:flex-end;padding:2px 0}
+.m-check{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.m-check input{flex:none;width:22px;height:22px;margin:0;accent-color:var(--primary)}
+.m-check a{color:var(--ink)}
+.m-msg{min-height:1.5em;font-size:14px;text-align:center;color:var(--muted);overflow-wrap:anywhere}
+.m-msg.is-error{color:var(--danger)}
+.m-foot{margin-top:auto;padding-top:12px;font-size:12px;line-height:1.5;color:var(--muted);text-align:center}
+.m-foot a{color:var(--ink)}
+.m-doc h2{font-size:18px;margin:24px 0 6px}
+.m-doc p,.m-doc li{color:var(--ink);margin:6px 0}
+.m-banner{border:1px solid var(--line);border-radius:16px;padding:12px 14px;background:var(--surface);color:var(--muted);font-size:13px}
+
+/* Signature: Slide Together. Halves slide toward each other while a button is busy */
+.is-busy .hl{animation:hl .9s ease-out infinite alternate}
+.is-busy .hr{animation:hr .9s ease-out infinite alternate}
+@keyframes hl{from{transform:translate(-6px,-4px)}to{transform:translate(0,0)}}
+@keyframes hr{from{transform:translate(6px,4px)}to{transform:translate(0,0)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

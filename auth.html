@@ -1,69 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MIZVO | Account</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>MIZVO | Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600&family=Manrope:wght@400;600&display=swap">
+<link rel="stylesheet" href="mizvo.css">
+<script src="mizvo-theme.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-*{box-sizing:border-box}
-body{
-margin:0;min-height:100vh;display:grid;place-items:center;
-background:#080d1c;color:white;font-family:Arial,sans-serif;padding:20px
-}
-.card{
-width:100%;max-width:390px;background:#111a30;padding:28px;
-border-radius:22px;border:1px solid #293653
-}
-.logo{text-align:center;font-size:36px;font-weight:900;color:#a78bfa}
-.sub{text-align:center;color:#aab4c9;margin:8px 0 25px}
-h2{text-align:center}
-input{
-width:100%;padding:15px;margin:8px 0;border-radius:10px;
-border:1px solid #34415d;background:#0b1325;color:white;font-size:15px
-}
-button{
-width:100%;padding:15px;margin-top:12px;border:0;border-radius:10px;
-background:#8061ed;color:white;font-weight:bold;font-size:15px;
-cursor:pointer
-}
-button:disabled{opacity:.5;cursor:not-allowed}
-#resendBtn{background:#34415d}
-.switch{text-align:center;margin-top:20px;color:#b9a8ff;cursor:pointer}
-.forgot{text-align:right;font-size:13px;color:#b9a8ff;cursor:pointer;margin:4px 2px 0}
-.hint{text-align:center;font-size:14px;color:#aab4c9;margin:0 0 8px;line-height:1.5}
-#message{text-align:center;font-size:14px;margin-top:16px;color:#b9c5df;overflow-wrap:anywhere}
-</style>
 </head>
 <body>
+<main class="m-page">
 
-<div class="card">
-<div class="logo">MIZVO</div>
-<div class="sub">Connect Beyond Boundaries</div>
+<svg width="48" height="48" viewBox="0 0 64 64" role="img" aria-label="MIZVO">
+<path d="M30 4A24 24 0 0 0 30 52Z" fill="var(--logo-left)"/>
+<path d="M34 12A24 24 0 0 1 34 60Z" fill="var(--logo-right)"/>
+</svg>
 
-<h2 id="heading">Welcome Back</h2>
+<h1 class="m-title" id="heading">Welcome back</h1>
+<p class="m-sub" id="subtitle">Sign in to continue.</p>
 
-<div class="hint" id="hint" style="display:none">
-Enter your account email. We will send you a link to set a new password.
+<form id="authForm" novalidate style="display:flex;flex-direction:column;gap:14px">
+<div class="m-field" id="nameField" hidden>
+<label for="name">Full name</label>
+<input class="m-input" id="name" type="text" autocomplete="name" maxlength="50">
 </div>
 
-<form id="authForm">
-<input id="name" placeholder="Your name" style="display:none">
-<input id="email" type="email" autocomplete="email" placeholder="Email address" required>
-<input id="password" type="password"
-placeholder="Password (minimum 6 characters)" minlength="6" required>
-<div class="forgot" id="forgotLink">Forgot Password?</div>
-<button id="submitBtn" type="submit">Login</button>
+<div class="m-field">
+<label for="email">Email address</label>
+<input class="m-input" id="email" type="email" autocomplete="email" inputmode="email">
+</div>
+
+<div class="m-field" id="passwordField">
+<label for="password">Password</label>
+<div class="m-pw">
+<input class="m-input" id="password" type="password" autocomplete="current-password">
+<button class="m-toggle" id="togglePw" type="button" aria-pressed="false" aria-label="Show password">Show</button>
+</div>
+</div>
+
+<div class="m-field" id="confirmField" hidden>
+<label for="confirm">Confirm password</label>
+<input class="m-input" id="confirm" type="password" autocomplete="new-password">
+</div>
+
+<button class="m-link right" id="forgotLink" type="button">Forgot password?</button>
+
+<label class="m-check" id="termsRow" hidden>
+<input type="checkbox" id="terms">
+<span>I agree to the <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</span>
+</label>
+
+<button class="m-btn" id="submitBtn" type="submit">Sign in</button>
 </form>
 
-<button type="button" id="resendBtn">Resend Verification Email</button>
+<div class="m-msg" id="message" role="status" aria-live="polite"></div>
 
-<div class="switch" id="switchMode">
-New to MIZVO? Create Account
-</div>
+<button class="m-link" id="resendBtn" type="button" hidden>Resend verification email</button>
+<button class="m-link" id="switchMode" type="button">New to MIZVO? Create account</button>
 
-<div id="message"></div>
-</div>
+<div class="m-foot">By continuing you agree to the <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</div>
+
+</main>
 
 <script>
 const SUPABASE_URL = "https://xpeslwtkzeybwydhzcls.supabase.co";
@@ -72,203 +73,193 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const SITE_URL = "https://shakib821r.github.io/MIZVO/";
 const RESET_URL = "https://shakib821r.github.io/MIZVO/reset.html";
+const BUSY_ICON =
+'<svg width="22" height="22" viewBox="0 0 64 64" aria-hidden="true">' +
+'<path class="hl" d="M30 4A24 24 0 0 0 30 52Z" fill="var(--on-primary)"/>' +
+'<path class="hr" d="M34 12A24 24 0 0 1 34 60Z" fill="var(--mint)"/></svg><span>Please wait</span>';
 
 // Modes: "login" (default), "signup", "forgot"
 let mode = "login";
 
-const form = document.getElementById("authForm");
-const nameInput = document.getElementById("name");
-const emailInput = document.getElementById("email");
-const passwordInput = document.getElementById("password");
-const heading = document.getElementById("heading");
-const hint = document.getElementById("hint");
-const submitBtn = document.getElementById("submitBtn");
-const switchMode = document.getElementById("switchMode");
-const forgotLink = document.getElementById("forgotLink");
-const message = document.getElementById("message");
-const resendBtn = document.getElementById("resendBtn");
+const $ = (id) => document.getElementById(id);
+const form = $("authForm"), nameInput = $("name"), emailInput = $("email");
+const passwordInput = $("password"), confirmInput = $("confirm"), termsBox = $("terms");
+const submitBtn = $("submitBtn"), message = $("message"), resendBtn = $("resendBtn");
 
-function goToApp(){
-window.location.replace("index.html");
+const COPY = {
+  login:  { heading: "Welcome back", sub: "Sign in to continue.", submit: "Sign in", sw: "New to MIZVO? Create account" },
+  signup: { heading: "Create your account", sub: "Create your MIZVO account.", submit: "Create account", sw: "Already have an account? Sign in" },
+  forgot: { heading: "Reset password", sub: "Enter your email. We will send a link to set a new password.", submit: "Send reset link", sw: "Back to sign in" }
+};
+
+function goToApp() { window.location.replace("index.html"); }
+
+function showMsg(text, isError) {
+  message.textContent = text || "";
+  message.className = "m-msg" + (isError ? " is-error" : "");
 }
 
-function friendlyError(error){
-const text = (error && error.message) ? error.message : "Something went wrong. Please try again.";
-const lower = text.toLowerCase();
-if (lower.includes("invalid login credentials")) {
-return "Wrong email or password. Please try again.";
-}
-if (lower.includes("email not confirmed")) {
-return "Your email is not verified yet. Tap Resend Verification Email, then open the link in your inbox.";
-}
-if (lower.includes("only request this after") || lower.includes("after 60 seconds")) {
-return "Please wait about a minute before requesting another email.";
-}
-if (lower.includes("rate limit")) {
-return "Too many email requests right now. Please wait a while and try again.";
-}
-if (lower.includes("failed to fetch") || lower.includes("network")) {
-return "Network problem. Check your internet connection and try again.";
-}
-return text;
+function friendlyError(error) {
+  const text = (error && error.message) ? error.message : "Something went wrong. Please try again.";
+  const lower = text.toLowerCase();
+  if (lower.includes("invalid login credentials")) return "Wrong email or password. Please try again.";
+  if (lower.includes("email not confirmed")) return "Your email is not verified yet. Tap Resend verification email, then open the link in your inbox.";
+  if (lower.includes("only request this after") || lower.includes("after 60 seconds")) return "Please wait about a minute before requesting another email.";
+  if (lower.includes("rate limit")) return "Too many email requests right now. Please wait a while and try again.";
+  if (lower.includes("failed to fetch") || lower.includes("network")) return "Network problem. Check your internet connection and try again.";
+  return text;
 }
 
-function setMode(newMode){
-mode = newMode;
-const isSignup = mode === "signup";
-const isForgot = mode === "forgot";
-
-heading.textContent = isSignup ? "Create Account" : isForgot ? "Reset Password" : "Welcome Back";
-submitBtn.textContent = isSignup ? "Create Account" : isForgot ? "Send Reset Link" : "Login";
-
-nameInput.style.display = isSignup ? "block" : "none";
-nameInput.required = isSignup;
-
-passwordInput.style.display = isForgot ? "none" : "block";
-passwordInput.required = !isForgot;
-passwordInput.autocomplete = isSignup ? "new-password" : "current-password";
-
-forgotLink.style.display = mode === "login" ? "block" : "none";
-resendBtn.style.display = isForgot ? "none" : "block";
-hint.style.display = isForgot ? "block" : "none";
-
-switchMode.textContent = isSignup
-? "Already have an account? Login"
-: isForgot
-? "Back to Login"
-: "New to MIZVO? Create Account";
-
-message.textContent = "";
+function updateSubmitState() {
+  submitBtn.disabled = (mode === "signup" && !termsBox.checked);
 }
 
-switchMode.addEventListener("click", () => {
-setMode(mode === "login" ? "signup" : "login");
+function setMode(next) {
+  mode = next;
+  const c = COPY[mode];
+  const isSignup = mode === "signup", isForgot = mode === "forgot";
+  $("heading").textContent = c.heading;
+  $("subtitle").textContent = c.sub;
+  submitBtn.textContent = c.submit;
+  $("switchMode").textContent = c.sw;
+  $("nameField").hidden = !isSignup;
+  $("confirmField").hidden = !isSignup;
+  $("termsRow").hidden = !isSignup;
+  $("passwordField").hidden = isForgot;
+  $("forgotLink").hidden = mode !== "login";
+  resendBtn.hidden = true;
+  passwordInput.autocomplete = isSignup ? "new-password" : "current-password";
+  showMsg("");
+  updateSubmitState();
+}
+
+function setBusy(on) {
+  if (on) {
+    submitBtn.dataset.label = submitBtn.textContent;
+    submitBtn.classList.add("is-busy");
+    submitBtn.innerHTML = BUSY_ICON;
+    submitBtn.disabled = true;
+  } else {
+    submitBtn.classList.remove("is-busy");
+    submitBtn.textContent = submitBtn.dataset.label || COPY[mode].submit;
+    updateSubmitState();
+  }
+}
+
+$("switchMode").addEventListener("click", () => setMode(mode === "login" ? "signup" : "login"));
+$("forgotLink").addEventListener("click", () => setMode("forgot"));
+termsBox.addEventListener("change", updateSubmitState);
+
+$("togglePw").addEventListener("click", (e) => {
+  const show = passwordInput.type === "password";
+  passwordInput.type = show ? "text" : "password";
+  e.currentTarget.textContent = show ? "Hide" : "Show";
+  e.currentTarget.setAttribute("aria-pressed", String(show));
+  e.currentTarget.setAttribute("aria-label", show ? "Hide password" : "Show password");
 });
 
-forgotLink.addEventListener("click", () => {
-setMode("forgot");
-});
+function validate() {
+  const email = emailInput.value.trim();
+  if (mode === "signup" && !nameInput.value.trim()) return "Please enter your full name.";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Please enter a valid email address.";
+  if (mode === "forgot") return "";
+  if (!passwordInput.value) return "Please enter your password.";
+  if (mode === "signup") {
+    if (passwordInput.value.length < 6) return "Password must be at least 6 characters.";
+    if (passwordInput.value !== confirmInput.value) return "The two passwords do not match.";
+    if (!termsBox.checked) return "Please accept the Terms and Privacy Policy.";
+  }
+  return "";
+}
 
 form.addEventListener("submit", async (e) => {
-e.preventDefault();
-message.textContent = "Please wait...";
-submitBtn.disabled = true;
+  e.preventDefault();
+  const problem = validate();
+  if (problem) { showMsg(problem, true); return; }
 
-try {
-let result;
+  showMsg("");
+  resendBtn.hidden = true;
+  setBusy(true);
+  const email = emailInput.value.trim();
 
-if (mode === "signup") {
-result = await client.auth.signUp({
-email: emailInput.value.trim(),
-password: passwordInput.value,
-options: {
-emailRedirectTo: SITE_URL,
-data: {
-display_name: nameInput.value.trim()
-}
-}
-});
+  try {
+    if (mode === "signup") {
+      const result = await client.auth.signUp({
+        email: email,
+        password: passwordInput.value,
+        options: { emailRedirectTo: SITE_URL, data: { display_name: nameInput.value.trim() } }
+      });
+      if (result.error) throw result.error;
 
-if (result.error) throw result.error;
+      if (result.data.session) {
+        showMsg("Account created successfully! Opening MIZVO...");
+        goToApp();
+      } else {
+        showMsg("Account created! Check your email to verify your account. If you do not see it, check your Spam folder. Already registered? Use the sign in link below.");
+        resendBtn.hidden = false;
+      }
 
-if (result.data.session) {
-message.textContent = "Account created successfully! Opening MIZVO...";
-goToApp();
-} else {
-message.textContent =
-"Account created! Check your email to verify your account. If you do not see it, check your Spam folder. Already registered? Use the Login link below.";
-}
+    } else if (mode === "forgot") {
+      const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: RESET_URL });
+      if (error) throw error;
+      // Same message for every valid email, so nobody can find out which emails are registered
+      showMsg("If this email is registered, a password reset link has been sent. Check your inbox and spam folder.");
 
-} else if (mode === "forgot") {
-const email = emailInput.value.trim();
-if (!email) {
-message.textContent = "Please enter your email address.";
-return;
-}
+    } else {
+      const result = await client.auth.signInWithPassword({ email: email, password: passwordInput.value });
+      if (result.error) throw result.error;
+      showMsg("Signed in! Opening MIZVO...");
+      goToApp();
+    }
 
-const { error } = await client.auth.resetPasswordForEmail(email, {
-redirectTo: RESET_URL
-});
-
-if (error) throw error;
-
-// Same message for every valid email, so nobody can find out which emails are registered
-message.textContent =
-"If this email is registered, a password reset link has been sent. Check your inbox and spam folder.";
-
-} else {
-result = await client.auth.signInWithPassword({
-email: emailInput.value.trim(),
-password: passwordInput.value
-});
-
-if (result.error) throw result.error;
-
-message.textContent = "Login successful! Opening MIZVO...";
-goToApp();
-}
-
-} catch (error) {
-console.error("MIZVO auth error:", error && error.code, error && error.message);
-message.textContent = friendlyError(error);
-} finally {
-submitBtn.disabled = false;
-}
+  } catch (error) {
+    console.error("MIZVO auth error:", error && error.code, error && error.message);
+    showMsg(friendlyError(error), true);
+    if (error && error.message && error.message.toLowerCase().includes("email not confirmed")) resendBtn.hidden = false;
+  } finally {
+    setBusy(false);
+  }
 });
 
 resendBtn.addEventListener("click", async () => {
-const email = emailInput.value.trim();
+  const email = emailInput.value.trim();
+  if (!email) { showMsg("Please enter your email address first.", true); return; }
 
-if (!email) {
-message.textContent = "Please enter your email address first.";
-return;
-}
-
-resendBtn.disabled = true;
-message.textContent = "Sending verification email...";
-
-try {
-const { error } = await client.auth.resend({
-type: "signup",
-email: email,
-options: {
-emailRedirectTo: SITE_URL
-}
+  resendBtn.disabled = true;
+  showMsg("Sending verification email...");
+  try {
+    const { error } = await client.auth.resend({ type: "signup", email: email, options: { emailRedirectTo: SITE_URL } });
+    if (error) throw error;
+    showMsg("Verification email requested. Check your inbox and spam folder.");
+  } catch (error) {
+    console.error("MIZVO resend error:", error && error.code, error && error.message);
+    showMsg(friendlyError(error), true);
+  } finally {
+    resendBtn.disabled = false;
+  }
 });
 
-if (error) throw error;
-
-message.textContent =
-"Verification email requested. Check your inbox and spam folder.";
-
-} catch (error) {
-console.error("MIZVO resend error:", error && error.code, error && error.message);
-message.textContent = friendlyError(error);
-} finally {
-resendBtn.disabled = false;
-}
-});
-
-// Start in Login mode, then apply any instruction passed in the address (#forgot, #password-updated)
+// Start in Sign in mode, then apply any instruction passed in the address
 setMode("login");
-
 if (window.location.hash === "#forgot") {
-setMode("forgot");
+  setMode("forgot");
+} else if (window.location.hash === "#signup") {
+  setMode("signup");
 } else if (window.location.hash === "#password-updated") {
-message.textContent = "Password updated. Please log in with your new password.";
+  showMsg("Password updated. Please sign in with your new password.");
 }
 if (window.location.hash) {
-try { history.replaceState(null, "", window.location.pathname); } catch (e) {}
+  try { history.replaceState(null, "", window.location.pathname); } catch (e) {}
 }
 
-// If the person is already logged in, skip this page
+// If the person is already signed in, skip this page
 (async () => {
-try {
-const { data } = await client.auth.getSession();
-if (data && data.session) goToApp();
-} catch (error) {
-console.error("MIZVO session check error:", error && error.message);
-}
+  try {
+    const { data } = await client.auth.getSession();
+    if (data && data.session) goToApp();
+  } catch (error) {
+    console.error("MIZVO session check error:", error && error.message);
+  }
 })();
 </script>
 </body>
