@@ -1,5 +1,13 @@
 # MIZVO — Changelog
 
+## 2026-11-08
+- Redesign (concept B "Halves"), tested by the founder:
+  - New files `mizvo.css` (design tokens, light and dark, shared components) and `mizvo-theme.js` (Light / Dark / System, remembered in the browser).
+  - `auth.html` rebuilt: Sign in (default), Create account (confirm password, Terms checkbox that enables the button), Forgot password; one Show/Hide button for both password fields; busy state with the two halves sliding together; "Resend verification email" appears only when needed. All sign-in, sign-up, reset and redirect logic kept; password minimum stays 6.
+  - `reset.html` rebuilt in the new design (same logic, shared Show/Hide for both fields, "Link expired" state).
+  - `terms.html` and `privacy.html` added as plain-language drafts (no technical or vendor details).
+  - `index.html` rebuilt: bottom navigation (Chats, Profile), honest Chats empty state, Profile (name from `profiles`, email, @username and status when set, Light/Dark/System, About, Log out), About MIZVO. Stories, Calls and the fake demo chats were removed.
+
 ## 2026-11-07
 - Database (Step B), run by the founder in the Supabase SQL Editor:
   - Found that `public.profiles` already existed (id, display_name, avatar_url, created_at; 3 rows; read-all and update-own policies; signup trigger). Kept all data and policies.

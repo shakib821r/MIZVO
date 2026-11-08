@@ -63,3 +63,21 @@
 ## D-016 — Staged redesign with founder approval at each stage (2026-11-07)
 - The brand identity and UI/UX redesign follows the founder's master prompt: audit, three creative directions, five design signatures and design system, screen designs, implementation, testing, documentation. No design is final without the founder's approval.
 - Messaging (Step C) is built after the redesign so the chat screens are made once, in the new design.
+
+## D-017 — Brand direction B "Halves" and five Design Signatures (2026-11-08, approved by the founder)
+- Direction B: two offset semicircles; Deep Teal #0F3D3E and Mint #8FE3C8; fonts Sora (headings) and Manrope (text); English only.
+- Signatures: The Halves, The Meeting Point (mint only where a connection is happening), Pill Geometry, Quiet Surface (no gradients, no glow), Slide Together (motion). Light-mode logo uses the deeper mint #35B894.
+- Not verified: global uniqueness of the design or the name. A trademark search for "MIZVO" is the founder's to do.
+
+## D-018 — Design tokens and theme (2026-11-08)
+- All colors, fonts and shapes are CSS variables in `mizvo.css`; dark mode redefines them. `mizvo-theme.js` sets Light / Dark / System (default System) and stores the choice in the browser, so it survives logout. Syncing the choice across devices can come later through `profiles`.
+
+## D-019 — Honest interface, no fake features (2026-11-08)
+- Navigation shows only real areas: Chats and Profile now, Contacts next. Stories and Calls were removed until they exist.
+- Chats shows an honest empty state until messaging exists. Notifications and Delete account are shown as "later", not as switches, because they need messaging, push support or a server function.
+
+## D-020 — Password minimum stays 6 characters (2026-11-08, founder's choice)
+- Longer passwords are allowed. A higher minimum can be set later in the UI and in Supabase.
+
+## D-021 — Terms and Privacy wording (2026-11-08, founder's request)
+- The pages contain plain policy language only: no vendor names, no explanation of how the app is built. They still say that information is shared with trusted service providers and what other users can see, because a privacy policy should disclose that. They remain drafts until a lawyer reviews them.
