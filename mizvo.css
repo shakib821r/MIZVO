@@ -131,3 +131,13 @@ body.locked .m-loader{display:grid}
 .m-at .m-input{padding-left:36px}
 .m-msg.left{text-align:left}
 .m-msg.is-ok{color:var(--ink);font-weight:600}
+
+/* ---- Edit profile, Settings, QR ---- */
+.m-area{height:auto;min-height:96px;border-radius:24px;padding:12px 18px;resize:vertical;line-height:1.5}
+.m-btn.m-outline{background:transparent;color:var(--ink);border:1px solid var(--field)}
+.m-later{display:flex;justify-content:space-between;gap:12px;align-items:center;min-height:48px;color:var(--muted);font-size:14px}
+.m-later span:first-child{color:var(--ink);font-weight:600;font-size:15px}
+.m-later + .m-later{border-top:1px solid var(--line)}
+.m-qr{width:100%;max-width:260px;margin:0 auto;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#fff}
+.m-qr svg{display:block;width:100%;height:auto}
+.m-link-box{font-size:13px;line-height:1.5;overflow-wrap:anywhere;user-select:all}

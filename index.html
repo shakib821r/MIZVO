@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600&family=Manrope:wght@400;600&display=swap">
 <link rel="stylesheet" href="mizvo.css">
 <script src="mizvo-theme.js"></script>
+<script src="qrcode.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="locked">
@@ -99,6 +100,55 @@
 <p id="profileStatus"></p>
 </div>
 
+<button class="m-rowbtn" type="button" id="editBtn"><span>Edit profile</span><span aria-hidden="true">&rsaquo;</span></button>
+<button class="m-rowbtn" type="button" id="qrBtn"><span>My QR code</span><span aria-hidden="true">&rsaquo;</span></button>
+<button class="m-rowbtn" type="button" id="settingsBtn"><span>Settings</span><span aria-hidden="true">&rsaquo;</span></button>
+<button class="m-rowbtn" type="button" id="aboutBtn"><span>About MIZVO</span><span aria-hidden="true">&rsaquo;</span></button>
+<button class="m-rowbtn m-danger" type="button" id="logoutBtn">Log out</button>
+<div class="m-msg" id="profileMsg" role="status" aria-live="polite"></div>
+</section>
+
+<!-- Edit profile -->
+<section id="editprofile" class="screen" aria-labelledby="editTitle">
+<button class="m-back" type="button" id="editBack">&larr; Back to Profile</button>
+<h1 class="m-h1" id="editTitle">Edit profile</h1>
+<form id="editForm" novalidate style="display:flex;flex-direction:column;gap:14px">
+<div class="m-field">
+<label for="editName">Full name</label>
+<input class="m-input" id="editName" type="text" maxlength="50" autocomplete="name">
+</div>
+<div class="m-field">
+<label for="editStatus">Status</label>
+<textarea class="m-input m-area" id="editStatus" maxlength="140" rows="3"></textarea>
+<div class="m-muted" id="statusCount" style="text-align:right">0 / 140</div>
+</div>
+<p class="m-muted" style="margin:0">Your @username is changed separately, from the Profile screen.</p>
+<div class="m-msg" id="editMsg" role="status" aria-live="polite"></div>
+<button class="m-btn" id="editSave" type="submit">Save changes</button>
+</form>
+</section>
+
+<!-- My QR code -->
+<section id="qr" class="screen" aria-labelledby="qrTitle">
+<button class="m-back" type="button" id="qrBack">&larr; Back to Profile</button>
+<h1 class="m-h1" id="qrTitle">My QR code</h1>
+<div class="m-card" style="text-align:center">
+<div class="m-qr" id="qrBox"></div>
+<div class="m-name" id="qrName" style="margin-top:14px"></div>
+<div class="m-muted" id="qrHandle"></div>
+</div>
+<p class="m-muted" style="margin:0">Scan this code with a phone camera to open this MIZVO profile. The code contains only the link below. It has no email address and no private information. The person scanning must be signed in to MIZVO.</p>
+<div class="m-card m-link-box" id="qrLink"></div>
+<button class="m-btn m-outline" id="copyLink" type="button">Copy link</button>
+<div class="m-msg" id="qrMsg" role="status" aria-live="polite"></div>
+<p class="m-muted" style="margin:0">If you change your @username, this code stops working and you will need the new one.</p>
+</section>
+
+<!-- Settings -->
+<section id="settings" class="screen" aria-labelledby="settingsTitle">
+<button class="m-back" type="button" id="settingsBack">&larr; Back to Profile</button>
+<h1 class="m-h1" id="settingsTitle">Settings</h1>
+
 <div class="m-label">Appearance</div>
 <div class="m-seg" role="group" aria-label="Theme">
 <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
@@ -106,10 +156,41 @@
 <button type="button" data-theme-choice="system" aria-pressed="true">System</button>
 </div>
 
-<div class="m-label">More</div>
-<button class="m-rowbtn" type="button" id="aboutBtn"><span>About MIZVO</span><span aria-hidden="true">&rsaquo;</span></button>
-<button class="m-rowbtn m-danger" type="button" id="logoutBtn">Log out</button>
-<div class="m-msg" id="profileMsg" role="status" aria-live="polite"></div>
+<div class="m-label">Account</div>
+<div class="m-card">
+<div class="m-muted">Email</div>
+<div id="settingsEmail" style="overflow-wrap:anywhere"></div>
+</div>
+<div class="m-card">
+<div class="m-muted">Language</div>
+<div>English</div>
+</div>
+
+<div class="m-label">Security</div>
+<form class="m-card" id="pwForm" novalidate style="display:flex;flex-direction:column;gap:12px">
+<div class="m-name" style="font-size:16px">Change password</div>
+<div class="m-field">
+<label for="newPw">New password</label>
+<div class="m-pw">
+<input class="m-input" id="newPw" type="password" autocomplete="new-password">
+<button class="m-toggle" id="pwToggle" type="button" aria-pressed="false" aria-label="Show passwords">Show</button>
+</div>
+</div>
+<div class="m-field">
+<label for="newPw2">Confirm new password</label>
+<input class="m-input" id="newPw2" type="password" autocomplete="new-password">
+</div>
+<div class="m-msg" id="pwMsg" role="status" aria-live="polite"></div>
+<button class="m-btn" id="pwSave" type="submit">Update password</button>
+</form>
+<button class="m-rowbtn" type="button" id="signOutAll"><span>Sign out of all devices</span><span aria-hidden="true">&rsaquo;</span></button>
+<div class="m-msg" id="settingsMsg" role="status" aria-live="polite"></div>
+
+<div class="m-label">Not available yet</div>
+<div class="m-card" style="padding-top:4px;padding-bottom:4px">
+<div class="m-later"><span>Notifications</span><span>Available when messaging launches</span></div>
+<div class="m-later"><span>Delete account</span><span>Planned for later</span></div>
+</div>
 </section>
 
 <!-- About -->
@@ -192,7 +273,7 @@ function showLoaderError(text) {
 
 function showScreen(id) {
   document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("active", s.id === id));
-  const tab = (id === "about" || id === "username") ? "profile" : id;
+  const tab = (id === "chats" || id === "contacts") ? id : "profile";
   document.querySelectorAll(".m-nav button").forEach((b) => {
     if (b.dataset.go === tab) b.setAttribute("aria-current", "page");
     else b.removeAttribute("aria-current");
@@ -347,11 +428,9 @@ $("usernameForm").addEventListener("submit", async (e) => {
 });
 
 // ---------- Contacts: find by exact @username ----------
-$("searchForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+async function doSearch(v) {
   const msg = $("searchMsg"), card = $("resultCard"), btn = $("searchBtn");
   card.hidden = true;
-  const v = normalizeName($("searchInput").value.replace(/^@/, ""));
   $("searchInput").value = v;
   if (v.length < 3 || v.length > 20) { setMsg(msg, "Enter 3 to 20 letters, numbers or underscores.", "error"); return; }
   setMsg(msg, "");
@@ -374,6 +453,147 @@ $("searchForm").addEventListener("submit", async (e) => {
     setBusy(btn, false, "Search");
     btn.disabled = false;
   }
+}
+$("searchForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  doSearch(normalizeName($("searchInput").value.replace(/^@/, "")));
+});
+
+// ---------- Edit profile ----------
+function updateStatusCount() { $("statusCount").textContent = $("editStatus").value.length + " / 140"; }
+$("editStatus").addEventListener("input", updateStatusCount);
+$("editBtn").addEventListener("click", () => {
+  const profile = me.profile || {};
+  const meta = me.user.user_metadata || {};
+  $("editName").value = (profile.display_name || meta.display_name || "").trim();
+  $("editStatus").value = (profile.status || "").trim();
+  updateStatusCount();
+  setMsg($("editMsg"), "");
+  showScreen("editprofile");
+});
+$("editBack").addEventListener("click", () => showScreen("profile"));
+
+$("editForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = $("editName").value.trim();
+  const status = $("editStatus").value.trim();
+  const msg = $("editMsg"), btn = $("editSave");
+  if (!name) { setMsg(msg, "Please enter your full name.", "error"); return; }
+  if (name.length > 50) { setMsg(msg, "Your name can have at most 50 characters.", "error"); return; }
+  if (status.length > 140) { setMsg(msg, "Your status can have at most 140 characters.", "error"); return; }
+  setMsg(msg, "");
+  setBusy(btn, true);
+  try {
+    const { data, error } = await client.from("profiles").update({ display_name: name, status: status || null })
+      .eq("id", me.user.id).select("display_name, username, status").maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error("Could not save your profile. Please try again.");
+    me.profile = data;
+    showProfile();
+    setMsg($("profileMsg"), "Profile saved.", "ok");
+    showScreen("profile");
+  } catch (error) {
+    console.error("MIZVO profile save error:", error && error.code, error && error.message);
+    const m = (error && error.message ? error.message : "").toLowerCase();
+    setMsg(msg, m.indexOf("failed to fetch") !== -1 ? "Network problem. Check your internet connection and try again." : "Could not save your profile. Please try again.", "error");
+  } finally {
+    setBusy(btn, false, "Save changes");
+    btn.disabled = false;
+  }
+});
+
+// ---------- My QR code ----------
+const SITE_URL = "https://shakib821r.github.io/MIZVO/";
+function profileLink(username) { return SITE_URL + "?u=" + username; }
+
+$("qrBtn").addEventListener("click", () => {
+  const profile = me.profile;
+  if (!profile || !profile.username) {
+    openUsername("profile");
+    setMsg($("usernameMsg"), "Your QR code needs a @username. Choose one first.");
+    return;
+  }
+  if (!window.MizvoQR) { setMsg($("profileMsg"), "The QR code could not be loaded. Please refresh the page.", "error"); return; }
+  const link = profileLink(profile.username);
+  $("qrBox").innerHTML = window.MizvoQR.toSvg(link, "QR code for @" + profile.username);
+  $("qrName").textContent = (profile.display_name || "").trim() || "MIZVO user";
+  $("qrHandle").textContent = "@" + profile.username;
+  $("qrLink").textContent = link;
+  setMsg($("qrMsg"), "");
+  showScreen("qr");
+});
+$("qrBack").addEventListener("click", () => showScreen("profile"));
+
+$("copyLink").addEventListener("click", async () => {
+  const link = $("qrLink").textContent;
+  try {
+    await navigator.clipboard.writeText(link);
+    setMsg($("qrMsg"), "Link copied.", "ok");
+  } catch (e) {
+    setMsg($("qrMsg"), "Could not copy automatically. Press and hold the link above to copy it.", "error");
+  }
+});
+
+// ---------- Settings ----------
+$("settingsBtn").addEventListener("click", () => {
+  $("settingsEmail").textContent = me.user.email || "";
+  setMsg($("pwMsg"), "");
+  setMsg($("settingsMsg"), "");
+  showScreen("settings");
+});
+$("settingsBack").addEventListener("click", () => showScreen("profile"));
+
+// One button shows or hides BOTH password fields together
+$("pwToggle").addEventListener("click", (e) => {
+  const show = $("newPw").type === "password";
+  $("newPw").type = show ? "text" : "password";
+  $("newPw2").type = show ? "text" : "password";
+  e.currentTarget.textContent = show ? "Hide" : "Show";
+  e.currentTarget.setAttribute("aria-pressed", String(show));
+  e.currentTarget.setAttribute("aria-label", show ? "Hide passwords" : "Show passwords");
+});
+
+$("pwForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = $("pwMsg"), btn = $("pwSave");
+  if ($("newPw").value.length < 6) { setMsg(msg, "Password must be at least 6 characters.", "error"); return; }
+  if ($("newPw").value !== $("newPw2").value) { setMsg(msg, "The two passwords do not match.", "error"); return; }
+  setMsg(msg, "");
+  setBusy(btn, true);
+  try {
+    const { error } = await client.auth.updateUser({ password: $("newPw").value });
+    if (error) throw error;
+    $("newPw").value = "";
+    $("newPw2").value = "";
+    setMsg(msg, "Password updated.", "ok");
+  } catch (error) {
+    console.error("MIZVO password change error:", error && error.code, error && error.message);
+    const m = (error && error.message ? error.message : "").toLowerCase();
+    let text = "Could not update your password. Please try again.";
+    if (m.indexOf("different from the old password") !== -1) text = "Please choose a password you have not used before.";
+    else if (m.indexOf("reauth") !== -1 || m.indexOf("recent") !== -1 || m.indexOf("session") !== -1) text = "For security, please log out, sign in again, and then change your password.";
+    else if (m.indexOf("failed to fetch") !== -1 || m.indexOf("network") !== -1) text = "Network problem. Check your internet connection and try again.";
+    setMsg(msg, text, "error");
+  } finally {
+    setBusy(btn, false, "Update password");
+    btn.disabled = false;
+  }
+});
+
+$("signOutAll").addEventListener("click", async () => {
+  if (!window.confirm("Sign out of MIZVO on all your devices?")) return;
+  const btn = $("signOutAll");
+  setMsg($("settingsMsg"), "");
+  btn.disabled = true;
+  try {
+    const { error } = await client.auth.signOut({ scope: "global" });
+    if (error) throw error;
+    goToAuth();
+  } catch (error) {
+    console.error("MIZVO global sign out error:", error && error.code, error && error.message);
+    setMsg($("settingsMsg"), "Could not sign out of all devices. Please try again.", "error");
+    btn.disabled = false;
+  }
 });
 
 // ---------- Log out and start-up ----------
@@ -392,7 +612,18 @@ async function logout() {
 }
 $("logoutBtn").addEventListener("click", logout);
 
+// A scanned QR link looks like ...?u=username. Remember it while the person signs in.
+function readIncomingUsername() {
+  let u = "";
+  try { u = new URLSearchParams(window.location.search).get("u") || ""; } catch (e) {}
+  u = u.toLowerCase();
+  if (/^[a-z0-9_]{3,20}$/.test(u)) return u;
+  try { u = sessionStorage.getItem("mizvo-pending-u") || ""; } catch (e) { u = ""; }
+  return /^[a-z0-9_]{3,20}$/.test(u) ? u : "";
+}
+
 async function initAuth() {
+  const incoming = readIncomingUsername();
   if (typeof supabase === "undefined") {
     showLoaderError("Could not load the sign-in service. Check your internet connection and refresh the page.");
     return;
@@ -402,7 +633,11 @@ async function initAuth() {
   try {
     const { data, error } = await client.auth.getSession();
     if (error) throw error;
-    if (!data.session) { goToAuth(); return; }
+    if (!data.session) {
+      if (incoming) { try { sessionStorage.setItem("mizvo-pending-u", incoming); } catch (e) {} }
+      goToAuth();
+      return;
+    }
     me.user = data.session.user;
     showProfile();
     document.body.classList.remove("locked");
@@ -410,7 +645,14 @@ async function initAuth() {
     showProfile();
     let skipped = false;
     try { skipped = sessionStorage.getItem("mizvo-skip-username") === "1"; } catch (e) {}
-    if (me.profile && !me.profile.username && !skipped) openUsername("chats");
+    if (incoming) {
+      try { sessionStorage.removeItem("mizvo-pending-u"); } catch (e) {}
+      try { history.replaceState(null, "", window.location.pathname); } catch (e) {}
+      showScreen("contacts");
+      doSearch(incoming);
+    } else if (me.profile && !me.profile.username && !skipped) {
+      openUsername("chats");
+    }
   } catch (error) {
     showLoaderError("Could not check your login: " + error.message + ".");
   }
