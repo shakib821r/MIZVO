@@ -1,256 +1,218 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#101124">
-<title>MIZVO — Connect Beyond Boundaries</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>MIZVO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600&family=Manrope:wght@400;600&display=swap">
+<link rel="stylesheet" href="mizvo.css">
+<script src="mizvo-theme.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:#101124;color:#fff;font-family:Arial,sans-serif}
-.app{max-width:480px;margin:auto;min-height:100vh;background:#15162d;padding:20px 16px 85px}
-header{display:flex;justify-content:space-between;align-items:center;margin:10px 0 25px}
-.logo{font-size:28px;font-weight:900;letter-spacing:3px;color:#a78bfa}
-.tag{font-size:11px;color:#aaa;margin-top:4px}
-.avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#ec4899);display:grid;place-items:center;font-weight:bold}
-h2{font-size:23px;margin:0 0 18px}
-.search{width:100%;padding:15px;border:1px solid #30314d;border-radius:14px;background:#20213b;color:white;font-size:15px;outline:none}
-.stories{display:flex;gap:16px;overflow:auto;margin:23px 0}
-.story{text-align:center;min-width:58px;font-size:11px;color:#bbb}
-.story .avatar{margin:auto auto 7px;border:2px solid #a78bfa}
-.section{display:flex;justify-content:space-between;align-items:center;margin:24px 0 12px}
-.section span{font-size:13px;color:#aaa}
-.chat{display:flex;align-items:center;gap:13px;padding:13px 2px;border-bottom:1px solid #292a43;cursor:pointer}
-.chat .avatar{flex-shrink:0}
-.info{flex:1;min-width:0}
-.info strong{font-size:14px}
-.info p{font-size:12px;color:#aaa;margin:6px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.time{font-size:10px;color:#aaa}
-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:flex;justify-content:space-around;background:#1c1d37;border-top:1px solid #30314d;padding:15px 5px}
-nav button{background:none;border:0;color:#aaa;font-size:12px;cursor:pointer}
-nav button.active{color:#b69aff}
-.screen{display:none}.screen.active{display:block}
-.message{padding:12px 15px;border-radius:15px;margin:10px 0;max-width:82%;background:#292a47;font-size:14px}
-.mine{margin-left:auto;background:#7047d7}
-.inputrow{display:flex;gap:8px;margin-top:20px}
-.inputrow input{flex:1;min-width:0;background:#22233e;color:white;border:0;border-radius:12px;padding:13px}
-.inputrow button{background:#8055e8;color:white;border:0;border-radius:12px;padding:12px}
-.back{background:none;border:0;color:#b69aff;font-size:16px;padding:12px 0}
-
-/* ---- Auth additions (loading screen, profile details, logout) ---- */
-body.locked .app,body.locked nav{display:none}
-#loader{display:none;min-height:100vh;place-items:center;text-align:center;padding:24px;color:#b9c5df;font-size:15px;line-height:1.6}
-body.locked #loader{display:grid}
-#loader a{color:#b69aff}
-#profile .avatar{margin-bottom:12px}
-#profileEmail{color:#aaa;font-size:13px;overflow-wrap:anywhere}
-.logout{width:100%;margin-top:22px;padding:14px;border:0;border-radius:12px;background:#34415d;color:#fff;font-weight:bold;font-size:15px;cursor:pointer}
-.logout:disabled{opacity:.5;cursor:not-allowed}
-#profileMsg{color:#f4a7a7;font-size:13px;margin-top:12px;overflow-wrap:anywhere}
-
-/* ---- About MIZVO (Founder, Vision, Mission, Contact) ---- */
-.aboutbtn{width:100%;margin-top:18px;padding:14px 16px;border:1px solid #30314d;border-radius:12px;background:#20213b;color:#fff;font-size:15px;font-weight:bold;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
-.aboutbtn span{color:#b69aff}
-.founder{text-align:center;padding:26px 18px 22px;border-radius:22px;background:linear-gradient(160deg,#241b4a,#1c1d37 60%);border:1px solid #30314d;margin-bottom:16px}
-.founder-ring{width:132px;height:132px;margin:0 auto 16px;border-radius:50%;padding:4px;background:linear-gradient(135deg,#8b5cf6,#ec4899)}
-.founder-photo{width:100%;height:100%;border-radius:50%;object-fit:cover;object-position:center 15%;display:block;background:#fff}
-.founder-fallback{display:none;width:100%;height:100%;border-radius:50%;background:#15162d;place-items:center;font-size:44px;font-weight:bold;color:#fff}
-.founder h3{margin:0 0 10px;font-size:22px}
-.badge{display:inline-block;padding:6px 14px;border-radius:999px;background:rgba(167,139,250,.16);border:1px solid #6d54c9;color:#cdbcff;font-size:11px;font-weight:bold;letter-spacing:2px}
-.founder .org{margin:12px 0 0;color:#aab4c9;font-size:13px}
-.about-card{background:#1c1d37;border:1px solid #30314d;border-radius:18px;padding:20px;margin-bottom:16px}
-.about-card .label{font-size:11px;letter-spacing:2px;color:#a78bfa;font-weight:bold;margin:0 0 8px}
-.about-card h3{margin:0 0 12px;font-size:19px;line-height:1.35}
-.about-card p{margin:0 0 12px;color:#c9d0e4;font-size:14px;line-height:1.7}
-.about-card p:last-child{margin-bottom:0}
-.about-card a{color:#b69aff;overflow-wrap:anywhere}
-</style>
 </head>
 <body class="locked">
 
-<div id="loader"><div id="loaderText">Checking your login...</div></div>
+<div class="m-loader"><div id="loaderText">Checking your login...</div></div>
 
-<div class="app">
-<header><div><div class="logo">MIZVO</div><div class="tag">Connect Beyond Boundaries.</div></div><div class="avatar" id="headerAvatar">M</div></header>
+<div class="m-app">
 
-<section id="chats" class="screen active">
-<h2>Messages</h2>
-<input id="search" class="search" placeholder="Search conversations..." oninput="filterChats()">
-<div class="section"><strong>Stories</strong><span>See all</span></div>
-<div class="stories">
-<div class="story"><div class="avatar">+</div>Your story</div>
-<div class="story"><div class="avatar">A</div>Alex</div>
-<div class="story"><div class="avatar">S</div>Sophia</div>
-<div class="story"><div class="avatar">J</div>James</div>
-<div class="story"><div class="avatar">L</div>Lisa</div>
-</div>
-<div class="section"><strong>Recent Chats</strong><span>See all</span></div>
-<div id="chatlist">
-<div class="chat" onclick="openChat('Alex Morgan','A')"><div class="avatar">A</div><div class="info"><strong>Alex Morgan</strong><p>Hey! How are you?</p></div><div class="time">10:42</div></div>
-<div class="chat" onclick="openChat('Sophia Lee','S')"><div class="avatar">S</div><div class="info"><strong>Sophia Lee</strong><p>Sent you a photo 📷</p></div><div class="time">09:30</div></div>
-<div class="chat" onclick="openChat('James Wilson','J')"><div class="avatar">J</div><div class="info"><strong>James Wilson</strong><p>Let's talk later!</p></div><div class="time">Yesterday</div></div>
-<div class="chat" onclick="openChat('Lisa Brown','L')"><div class="avatar">L</div><div class="info"><strong>Lisa Brown</strong><p>Thank you ❤️</p></div><div class="time">Yesterday</div></div>
+<!-- Chats -->
+<section id="chats" class="screen active" aria-labelledby="chatsTitle">
+<header class="m-header">
+<svg width="32" height="32" viewBox="0 0 64 64" role="img" aria-label="MIZVO">
+<path d="M30 4A24 24 0 0 0 30 52Z" fill="var(--logo-left)"/>
+<path d="M34 12A24 24 0 0 1 34 60Z" fill="var(--logo-right)"/>
+</svg>
+<h1 class="m-h1" id="chatsTitle">Chats</h1>
+</header>
+<div class="m-empty">
+<svg width="96" height="96" viewBox="0 0 64 64" aria-hidden="true">
+<path d="M30 4A24 24 0 0 0 30 52Z" fill="var(--logo-left)"/>
+<path d="M34 12A24 24 0 0 1 34 60Z" fill="var(--logo-right)"/>
+</svg>
+<h2>No conversations yet</h2>
+<p>Messaging is coming soon. Your conversations will appear here.</p>
 </div>
 </section>
 
-<section id="conversation" class="screen">
-<button class="back" onclick="showScreen('chats')">← Back to chats</button>
-<h2 id="chatname">Conversation</h2>
-<div id="messages"><div class="message">Welcome to MIZVO demo! 👋</div><div class="message mine">Connect Beyond Boundaries.</div></div>
-<div class="inputrow"><input id="msg" placeholder="Write a message..."><button onclick="sendMsg()">Send</button></div>
-</section>
+<!-- Profile -->
+<section id="profile" class="screen" aria-labelledby="profileTitle">
+<header class="m-header"><h1 class="m-h1" id="profileTitle">Profile</h1></header>
 
-<section id="stories" class="screen"><h2>Stories</h2><p>Your stories will appear here.</p><p>Share moments with your friends.</p></section>
-
-<section id="calls" class="screen"><h2>Calls</h2><p>Your recent calls will appear here.</p><p>Audio and video calling will be added later.</p></section>
-
-<section id="profile" class="screen">
-<h2>Your Profile</h2>
-<div class="avatar" id="profileAvatar">M</div>
-<p id="profileName">MIZVO User</p>
-<p id="profileEmail"></p>
-<p>Settings · Privacy · Account</p>
-<button type="button" class="aboutbtn" onclick="showScreen('about')">About MIZVO <span>›</span></button>
-<button type="button" class="logout" id="logoutBtn" onclick="logout()">Log out</button>
-<div id="profileMsg"></div>
-</section>
-
-<section id="about" class="screen">
-<button class="back" onclick="showScreen('profile')">← Back to Profile</button>
-<h2>About MIZVO</h2>
-
-<div class="founder">
-<div class="founder-ring">
-<img class="founder-photo" src="founder.jpg" width="124" height="124" loading="lazy"
-alt="Md Nazmus Shakib, Founder and CEO of MIZVO"
-onerror="this.style.display='none';document.getElementById('founderFallback').style.display='grid'">
-<div class="founder-fallback" id="founderFallback">M</div>
+<div class="m-card m-id">
+<div class="m-avatar" aria-hidden="true"></div>
+<div style="min-width:0">
+<div class="m-name" id="profileName">&nbsp;</div>
+<div class="m-muted" id="profileHandle" hidden></div>
+<div class="m-muted" id="profileEmail"></div>
 </div>
-<h3>Md Nazmus Shakib</h3>
-<div class="badge">FOUNDER &amp; CEO</div>
-<p class="org">MIZVO</p>
+</div>
+<div class="m-card" id="statusCard" hidden>
+<div class="m-label" style="margin-top:0">Status</div>
+<p id="profileStatus"></p>
 </div>
 
-<div class="about-card">
-<p class="label">OUR VISION</p>
-<h3>Connecting People. Bringing the World Closer.</h3>
+<div class="m-label">Appearance</div>
+<div class="m-seg" role="group" aria-label="Theme">
+<button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
+<button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button>
+<button type="button" data-theme-choice="system" aria-pressed="true">System</button>
+</div>
+
+<div class="m-label">More</div>
+<button class="m-rowbtn" type="button" id="aboutBtn"><span>About MIZVO</span><span aria-hidden="true">&rsaquo;</span></button>
+<button class="m-rowbtn m-danger" type="button" id="logoutBtn">Log out</button>
+<div class="m-msg is-error" id="profileMsg" role="status" aria-live="polite"></div>
+</section>
+
+<!-- About -->
+<section id="about" class="screen" aria-labelledby="aboutTitle">
+<button class="m-back" type="button" id="aboutBack">&larr; Back to Profile</button>
+<h1 class="m-h1" id="aboutTitle">About MIZVO</h1>
+
+<div class="m-card m-id">
+<img class="m-photo" id="founderPhoto" src="founder.jpg" width="64" height="64" loading="lazy" alt="Md Nazmus Shakib, Founder and CEO of MIZVO"
+onerror="this.hidden=true;document.getElementById('founderFallback').hidden=false">
+<div class="m-avatar" id="founderFallback" style="width:64px;height:64px" hidden aria-hidden="true"></div>
+<div>
+<div class="m-name">Md Nazmus Shakib</div>
+<div class="m-badge">FOUNDER &amp; CEO</div>
+</div>
+</div>
+
+<div class="m-card">
+<div class="m-label" style="margin-top:0">Our vision</div>
+<h2 style="font-size:20px;margin-top:8px">Connecting People. Bringing the World Closer.</h2>
 <p>At MIZVO, we envision a world where distance never limits human connection.</p>
 <p>Our vision is to build a smarter, safer, and more connected world through seamless digital communication. We aim to bring people closer through innovative messaging technology, meaningful conversations, and reliable communication experiences.</p>
 <p>We believe communication should be simple, private, accessible, and effortless for everyone, everywhere.</p>
 <p>MIZVO is more than a messaging platform. It is a vision of a world without communication barriers, where every connection matters and every conversation brings us closer.</p>
 </div>
 
-<div class="about-card">
-<p class="label">OUR MISSION</p>
+<div class="m-card">
+<div class="m-label" style="margin-top:0">Our mission</div>
 <p>To empower people worldwide with modern, secure, and seamless communication tools that make connecting, sharing, and staying together easier than ever.</p>
 </div>
 
-<div class="about-card">
-<p class="label">CONTACT</p>
-<p><a href="mailto:mizvo.official@gmail.com">mizvo.official@gmail.com</a></p>
-</div>
-</section>
+<div class="m-card">
+<div class="m-label" style="margin-top:0">Contact</div>
+<p><a href="mailto:mizvo.official@gmail.com" style="color:var(--ink)">mizvo.official@gmail.com</a></p>
 </div>
 
-<nav>
-<button class="active" onclick="showScreen('chats',this)">Chats</button>
-<button onclick="showScreen('stories',this)">Stories</button>
-<button onclick="showScreen('calls',this)">Calls</button>
-<button onclick="showScreen('profile',this)">Profile</button>
+<div class="m-foot" style="margin-top:8px"><a href="terms.html">Terms</a> &middot; <a href="privacy.html">Privacy Policy</a></div>
+</section>
+
+</div>
+
+<nav class="m-nav" aria-label="Main">
+<button type="button" data-go="chats" aria-current="page">Chats</button>
+<button type="button" data-go="profile">Profile</button>
 </nav>
 
 <script>
-/* ---------- Existing demo functions (unchanged) ---------- */
-function showScreen(id,btn){
-document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-document.getElementById(id).classList.add('active');
-if(btn){document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
-}
-function openChat(name,initial){
-document.getElementById('chatname').textContent=name;
-showScreen('conversation');
-}
-function sendMsg(){
-const input=document.getElementById('msg');
-if(!input.value.trim())return;
-const div=document.createElement('div');
-div.className='message mine';
-div.textContent=input.value;
-document.getElementById('messages').appendChild(div);
-input.value='';
-}
-function filterChats(){
-const q=document.getElementById('search').value.toLowerCase();
-document.querySelectorAll('#chatlist .chat').forEach(c=>{
-c.style.display=c.innerText.toLowerCase().includes(q)?'flex':'none';
-});
-}
-
-/* ---------- Supabase login check (new) ---------- */
 const SUPABASE_URL = "https://xpeslwtkzeybwydhzcls.supabase.co";
 const SUPABASE_KEY = "sb_publishable_fvQoiONlnGaYpOKg7ao3qw_xLs00O_6";
 let client = null;
+const $ = (id) => document.getElementById(id);
 
-function goToAuth(){
-window.location.replace("auth.html");
-}
+function goToAuth() { window.location.replace("auth.html"); }
 
-function showLoaderError(text){
-const box = document.getElementById("loaderText");
-box.textContent = text + " ";
-const link = document.createElement("a");
-link.href = "auth.html";
-link.textContent = "Go to login page";
-box.appendChild(link);
-}
-
-function showApp(user){
-const meta = user.user_metadata || {};
-const name = (meta.display_name || "").trim() || (user.email ? user.email.split("@")[0] : "MIZVO User");
-const initial = name.charAt(0).toUpperCase() || "M";
-document.getElementById("headerAvatar").textContent = initial;
-document.getElementById("profileAvatar").textContent = initial;
-document.getElementById("profileName").textContent = name;
-document.getElementById("profileEmail").textContent = user.email || "";
-document.body.classList.remove("locked");
+function showLoaderError(text) {
+  const box = $("loaderText");
+  box.textContent = text + " ";
+  const link = document.createElement("a");
+  link.href = "auth.html";
+  link.textContent = "Go to sign in";
+  box.appendChild(link);
 }
 
-async function logout(){
-const btn = document.getElementById("logoutBtn");
-const msg = document.getElementById("profileMsg");
-msg.textContent = "";
-btn.disabled = true;
-try{
-const { error } = await client.auth.signOut();
-if (error) throw error;
-goToAuth();
-}catch(err){
-msg.textContent = "Logout failed: " + err.message;
-btn.disabled = false;
-}
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("active", s.id === id));
+  const tab = id === "about" ? "profile" : id;
+  document.querySelectorAll(".m-nav button").forEach((b) => {
+    if (b.dataset.go === tab) b.setAttribute("aria-current", "page");
+    else b.removeAttribute("aria-current");
+  });
+  window.scrollTo(0, 0);
 }
 
-async function initAuth(){
-if (typeof supabase === "undefined"){
-showLoaderError("Could not load the login service. Check your internet connection and refresh the page.");
-return;
+document.querySelectorAll(".m-nav button").forEach((b) => b.addEventListener("click", () => showScreen(b.dataset.go)));
+$("aboutBtn").addEventListener("click", () => showScreen("about"));
+$("aboutBack").addEventListener("click", () => showScreen("profile"));
+
+// Theme buttons (Light / Dark / System). The choice is remembered in this browser, also after logout.
+function syncThemeButtons() {
+  const current = window.MizvoTheme ? window.MizvoTheme.get() : "system";
+  document.querySelectorAll("[data-theme-choice]").forEach((b) =>
+    b.setAttribute("aria-pressed", String(b.dataset.themeChoice === current)));
 }
-client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-client.auth.onAuthStateChange((event)=>{
-if (event === "SIGNED_OUT") goToAuth();
-});
-try{
-const { data, error } = await client.auth.getSession();
-if (error) throw error;
-if (!data.session){
-goToAuth();
-return;
+document.querySelectorAll("[data-theme-choice]").forEach((b) =>
+  b.addEventListener("click", () => {
+    if (window.MizvoTheme) window.MizvoTheme.set(b.dataset.themeChoice);
+    syncThemeButtons();
+  }));
+syncThemeButtons();
+
+function showProfile(user, profile) {
+  const meta = user.user_metadata || {};
+  const name = ((profile && profile.display_name) || meta.display_name || "").trim() ||
+    (user.email ? user.email.split("@")[0] : "MIZVO user");
+  $("profileName").textContent = name;
+  $("profileEmail").textContent = user.email || "";
+  const handle = $("profileHandle");
+  if (profile && profile.username) { handle.textContent = "@" + profile.username; handle.hidden = false; }
+  else { handle.hidden = true; }
+  const status = (profile && profile.status) ? profile.status.trim() : "";
+  $("statusCard").hidden = !status;
+  $("profileStatus").textContent = status;
 }
-showApp(data.session.user);
-}catch(err){
-showLoaderError("Could not check your login: " + err.message + ".");
+
+async function loadProfile(userId) {
+  try {
+    const { data, error } = await client.from("profiles").select("display_name, username, status").eq("id", userId).maybeSingle();
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("MIZVO profile load error:", error && error.code, error && error.message);
+    return null;
+  }
 }
+
+async function logout() {
+  const btn = $("logoutBtn"), msg = $("profileMsg");
+  msg.textContent = "";
+  btn.disabled = true;
+  try {
+    const { error } = await client.auth.signOut();
+    if (error) throw error;
+    goToAuth();
+  } catch (error) {
+    msg.textContent = "Log out failed: " + error.message;
+    btn.disabled = false;
+  }
+}
+$("logoutBtn").addEventListener("click", logout);
+
+async function initAuth() {
+  if (typeof supabase === "undefined") {
+    showLoaderError("Could not load the sign-in service. Check your internet connection and refresh the page.");
+    return;
+  }
+  client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  client.auth.onAuthStateChange((event) => { if (event === "SIGNED_OUT") goToAuth(); });
+  try {
+    const { data, error } = await client.auth.getSession();
+    if (error) throw error;
+    if (!data.session) { goToAuth(); return; }
+    const user = data.session.user;
+    showProfile(user, null);
+    document.body.classList.remove("locked");
+    showProfile(user, await loadProfile(user.id));
+  } catch (error) {
+    showLoaderError("Could not check your login: " + error.message + ".");
+  }
 }
 
 initAuth();
