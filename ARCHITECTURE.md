@@ -13,7 +13,7 @@
 ## Pages and flow
 - `auth.html` — modes Sign in (default), Create account, Reset password. signUp / signInWithPassword / resend / resetPasswordForEmail. Signup email redirect: the site root. Reset email redirect: `reset.html`. Redirects to `index.html` after sign-in or if a session exists. Address hints: `#forgot`, `#signup`, `#password-updated`.
 - `reset.html` — opened from the reset email. Reads the link before the client starts; shows the form only after Supabase's PASSWORD_RECOVERY event (or a session with a recovery link); `updateUser({ password })`, then `signOut`, then `auth.html#password-updated`. Invalid or expired link: message and "Request a new link" (`auth.html#forgot`).
-- `index.html` — main app. `getSession()`: no session goes to `auth.html`. Screens (one `showScreen` function): Chats (empty state), Profile, About. Reads `display_name`, `username`, `status` from `profiles` for the signed-in user. Log out calls `signOut()`; a SIGNED_OUT event also redirects to `auth.html`.
+- `index.html` — main app. `getSession()`: no session goes to `auth.html`. Screens (one `showScreen` function): Chats (empty state), Contacts, Choose/Change username, Profile, About. Reads `display_name`, `username`, `status` from `profiles` for the signed-in user. Contacts finds a person with an exact `username` match. The username screen cleans the input (lowercase a–z, 0–9, _), checks availability with a short delay, then updates the user's own row; the database has the final say (unique, format and reserved-name rules). "Skip for now" is remembered for the browser session only. Log out calls `signOut()`; a SIGNED_OUT event also redirects to `auth.html`.
 - `terms.html`, `privacy.html` — static draft pages.
 
 ## Authentication facts
@@ -24,6 +24,7 @@
 - One table so far: `public.profiles`, one row per user, created by trigger `on_auth_user_created` → `public.handle_new_user()` when a user signs up (display name cut to 50 characters, `search_path` empty).
 - Columns: `id` (uuid, primary key, references auth.users, delete cascade), `display_name` (max 50), `username` (unique, 3–20 characters of a–z 0–9 _, empty until chosen), `status` (max 140), `avatar_url`, `created_at`, `updated_at` (kept current by trigger `profiles_set_updated_at`).
 - Row Level Security is ON. Policies: signed-in users can read all rows; users can update only their own row. No insert policy (the trigger inserts), no delete, and the anonymous role has no access. The email address is never stored in `profiles`.
+- Trigger `profiles_block_reserved_username` (function `mizvo_block_reserved_username`) rejects reserved usernames for app users: anything starting with "mizvo" and a fixed list (admin, support, official, staff, and similar). Roles postgres, supabase_admin and service_role are exempt. The list in `index.html` is only early feedback.
 - SQL is run in the Supabase SQL Editor as role `postgres`. Inspect first with read-only queries.
 
 ## Email

@@ -1,6 +1,10 @@
 # MIZVO — Changelog
 
 ## 2026-11-08
+- Contacts and usernames, tested by the founder (7 tests):
+  - Database: added trigger `profiles_block_reserved_username` that blocks reserved usernames (anything starting with "mizvo", plus admin, support, official, staff and similar) for app users.
+  - `index.html`: new Contacts tab (find by exact @username, shows name, @username, status; "This is you" for yourself); new Choose/Change @username screen (live cleaning, length and reserved-name feedback, availability check, Save; Skip for now / Cancel); Profile shows @username and a Choose/Change @username button.
+  - `mizvo.css`: styles for the @ input and for success messages.
 - Redesign (concept B "Halves"), tested by the founder:
   - New files `mizvo.css` (design tokens, light and dark, shared components) and `mizvo-theme.js` (Light / Dark / System, remembered in the browser).
   - `auth.html` rebuilt: Sign in (default), Create account (confirm password, Terms checkbox that enables the button), Forgot password; one Show/Hide button for both password fields; busy state with the two halves sliding together; "Resend verification email" appears only when needed. All sign-in, sign-up, reset and redirect logic kept; password minimum stays 6.

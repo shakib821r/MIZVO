@@ -81,3 +81,9 @@
 
 ## D-021 — Terms and Privacy wording (2026-11-08, founder's request)
 - The pages contain plain policy language only: no vendor names, no explanation of how the app is built. They still say that information is shared with trusted service providers and what other users can see, because a privacy policy should disclose that. They remain drafts until a lawyer reviews them.
+
+## D-022 — Username rules (2026-11-08, approved by the founder)
+- A username can be changed at any time. The old name becomes free for anyone, and links or QR codes made with it stop working.
+- Choosing a username can be skipped for now (remembered per browser session); it will be needed once messaging exists.
+- Reserved names are blocked in the database for app users (anything starting with "mizvo" and a fixed list). The founder can set his own through the SQL Editor.
+- Searching by exact @username is a usage rule, not a security wall: signed-in users can technically read all profiles (D-012).
