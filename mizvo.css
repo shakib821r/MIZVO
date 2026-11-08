@@ -124,3 +124,10 @@ body.locked .m-loader{display:grid}
 .m-nav button::before{content:"";display:block;width:40px;height:4px;border-radius:2px;margin:0 auto 6px;background:transparent}
 .m-nav button[aria-current="page"]{color:var(--ink)}
 .m-nav button[aria-current="page"]::before{background:var(--logo-right)}
+
+/* ---- Username and Contacts ---- */
+.m-at{position:relative}
+.m-at > span{position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.m-at .m-input{padding-left:36px}
+.m-msg.left{text-align:left}
+.m-msg.is-ok{color:var(--ink);font-weight:600}

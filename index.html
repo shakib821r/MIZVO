@@ -37,6 +37,50 @@
 </div>
 </section>
 
+<!-- Contacts -->
+<section id="contacts" class="screen" aria-labelledby="contactsTitle">
+<header class="m-header"><h1 class="m-h1" id="contactsTitle">Contacts</h1></header>
+<form id="searchForm" novalidate style="display:flex;flex-direction:column;gap:14px">
+<div class="m-field">
+<label for="searchInput">Find by @username</label>
+<div class="m-at"><span aria-hidden="true">@</span>
+<input class="m-input" id="searchInput" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="21">
+</div>
+</div>
+<button class="m-btn" id="searchBtn" type="submit">Search</button>
+</form>
+<div class="m-msg" id="searchMsg" role="status" aria-live="polite"></div>
+<div class="m-card" id="resultCard" hidden>
+<div class="m-id">
+<div class="m-avatar" aria-hidden="true"></div>
+<div style="min-width:0">
+<div class="m-name" id="resultName"></div>
+<div class="m-muted" id="resultHandle"></div>
+</div>
+</div>
+<p id="resultStatus" hidden></p>
+<p class="m-muted" id="resultNote"></p>
+</div>
+</section>
+
+<!-- Choose username -->
+<section id="username" class="screen" aria-labelledby="usernameTitle">
+<button class="m-back" type="button" id="usernameSkip">Skip for now</button>
+<h1 class="m-h1" id="usernameTitle">Choose your @username</h1>
+<p class="m-sub">This is how people find you. You can change it later.</p>
+<form id="usernameForm" novalidate style="display:flex;flex-direction:column;gap:14px">
+<div class="m-field">
+<label for="usernameInput">Username</label>
+<div class="m-at"><span aria-hidden="true">@</span>
+<input class="m-input" id="usernameInput" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="20">
+</div>
+</div>
+<div class="m-msg left" id="usernameMsg" role="status" aria-live="polite"></div>
+<p class="m-muted" style="margin:0">3 to 20 characters. Lowercase letters, numbers and underscore (_) only.</p>
+<button class="m-btn" id="usernameSave" type="submit" disabled>Save username</button>
+</form>
+</section>
+
 <!-- Profile -->
 <section id="profile" class="screen" aria-labelledby="profileTitle">
 <header class="m-header"><h1 class="m-h1" id="profileTitle">Profile</h1></header>
@@ -49,6 +93,7 @@
 <div class="m-muted" id="profileEmail"></div>
 </div>
 </div>
+<button class="m-rowbtn" type="button" id="usernameBtn"><span>Choose your @username</span><span aria-hidden="true">&rsaquo;</span></button>
 <div class="m-card" id="statusCard" hidden>
 <div class="m-label" style="margin-top:0">Status</div>
 <p id="profileStatus"></p>
@@ -64,7 +109,7 @@
 <div class="m-label">More</div>
 <button class="m-rowbtn" type="button" id="aboutBtn"><span>About MIZVO</span><span aria-hidden="true">&rsaquo;</span></button>
 <button class="m-rowbtn m-danger" type="button" id="logoutBtn">Log out</button>
-<div class="m-msg is-error" id="profileMsg" role="status" aria-live="polite"></div>
+<div class="m-msg" id="profileMsg" role="status" aria-live="polite"></div>
 </section>
 
 <!-- About -->
@@ -108,6 +153,7 @@ onerror="this.hidden=true;document.getElementById('founderFallback').hidden=fals
 
 <nav class="m-nav" aria-label="Main">
 <button type="button" data-go="chats" aria-current="page">Chats</button>
+<button type="button" data-go="contacts">Contacts</button>
 <button type="button" data-go="profile">Profile</button>
 </nav>
 
@@ -115,9 +161,25 @@ onerror="this.hidden=true;document.getElementById('founderFallback').hidden=fals
 const SUPABASE_URL = "https://xpeslwtkzeybwydhzcls.supabase.co";
 const SUPABASE_KEY = "sb_publishable_fvQoiONlnGaYpOKg7ao3qw_xLs00O_6";
 let client = null;
+const me = { user: null, profile: null };
+let usernameReturn = "profile";
 const $ = (id) => document.getElementById(id);
 
+const BUSY_ICON =
+'<svg width="22" height="22" viewBox="0 0 64 64" aria-hidden="true">' +
+'<path class="hl" d="M30 4A24 24 0 0 0 30 52Z" fill="var(--on-primary)"/>' +
+'<path class="hr" d="M34 12A24 24 0 0 1 34 60Z" fill="var(--mint)"/></svg><span>Please wait</span>';
+
+// Early feedback only. The database is the real enforcement of reserved names.
+const RESERVED = ["admin","administrator","root","support","help","security","official","staff","team","moderator","system","info","contact","noreply","owner","founder","ceo","abuse","privacy","terms","api","www","about","settings","login","signup"];
+
 function goToAuth() { window.location.replace("auth.html"); }
+
+function setMsg(el, text, kind) {
+  el.textContent = text || "";
+  el.className = "m-msg" + (el.dataset.left ? " left" : "") + (kind === "error" ? " is-error" : kind === "ok" ? " is-ok" : "");
+}
+$("usernameMsg").dataset.left = "1";
 
 function showLoaderError(text) {
   const box = $("loaderText");
@@ -130,12 +192,24 @@ function showLoaderError(text) {
 
 function showScreen(id) {
   document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("active", s.id === id));
-  const tab = id === "about" ? "profile" : id;
+  const tab = (id === "about" || id === "username") ? "profile" : id;
   document.querySelectorAll(".m-nav button").forEach((b) => {
     if (b.dataset.go === tab) b.setAttribute("aria-current", "page");
     else b.removeAttribute("aria-current");
   });
   window.scrollTo(0, 0);
+}
+
+function setBusy(btn, on, label) {
+  if (on) {
+    btn.dataset.label = btn.textContent;
+    btn.classList.add("is-busy");
+    btn.innerHTML = BUSY_ICON;
+    btn.disabled = true;
+  } else {
+    btn.classList.remove("is-busy");
+    btn.textContent = label || btn.dataset.label || "";
+  }
 }
 
 document.querySelectorAll(".m-nav button").forEach((b) => b.addEventListener("click", () => showScreen(b.dataset.go)));
@@ -155,15 +229,19 @@ document.querySelectorAll("[data-theme-choice]").forEach((b) =>
   }));
 syncThemeButtons();
 
-function showProfile(user, profile) {
+// ---------- Profile ----------
+function showProfile() {
+  const user = me.user, profile = me.profile;
   const meta = user.user_metadata || {};
   const name = ((profile && profile.display_name) || meta.display_name || "").trim() ||
     (user.email ? user.email.split("@")[0] : "MIZVO user");
   $("profileName").textContent = name;
   $("profileEmail").textContent = user.email || "";
   const handle = $("profileHandle");
-  if (profile && profile.username) { handle.textContent = "@" + profile.username; handle.hidden = false; }
+  const hasName = Boolean(profile && profile.username);
+  if (hasName) { handle.textContent = "@" + profile.username; handle.hidden = false; }
   else { handle.hidden = true; }
+  $("usernameBtn").firstElementChild.textContent = hasName ? "Change @username" : "Choose your @username";
   const status = (profile && profile.status) ? profile.status.trim() : "";
   $("statusCard").hidden = !status;
   $("profileStatus").textContent = status;
@@ -180,16 +258,135 @@ async function loadProfile(userId) {
   }
 }
 
+// ---------- Choose / change username ----------
+let checkToken = 0, availableName = null, debounceTimer = null;
+
+function normalizeName(v) { return String(v || "").toLowerCase().replace(/[^a-z0-9_]/g, ""); }
+
+function reservedReason(v) {
+  if (v.indexOf("mizvo") === 0 || RESERVED.indexOf(v) !== -1) return "That username is reserved. Please choose another.";
+  return "";
+}
+
+function openUsername(returnTo) {
+  usernameReturn = returnTo;
+  const has = Boolean(me.profile && me.profile.username);
+  $("usernameTitle").textContent = has ? "Change your @username" : "Choose your @username";
+  $("usernameSkip").textContent = has ? "Cancel" : "Skip for now";
+  $("usernameInput").value = "";
+  availableName = null;
+  $("usernameSave").disabled = true;
+  setMsg($("usernameMsg"), "");
+  showScreen("username");
+}
+
+$("usernameBtn").addEventListener("click", () => openUsername("profile"));
+$("usernameSkip").addEventListener("click", () => {
+  if (!(me.profile && me.profile.username)) {
+    try { sessionStorage.setItem("mizvo-skip-username", "1"); } catch (e) {}
+  }
+  showScreen(usernameReturn);
+});
+
+$("usernameInput").addEventListener("input", () => {
+  const input = $("usernameInput");
+  const v = normalizeName(input.value);
+  input.value = v;
+  availableName = null;
+  $("usernameSave").disabled = true;
+  clearTimeout(debounceTimer);
+  const msg = $("usernameMsg");
+  if (!v) { setMsg(msg, ""); return; }
+  if (v.length < 3) { setMsg(msg, "At least 3 characters."); return; }
+  const reason = reservedReason(v);
+  if (reason) { setMsg(msg, reason, "error"); return; }
+  if (me.profile && me.profile.username === v) { setMsg(msg, "This is your current username."); return; }
+  setMsg(msg, "Checking...");
+  const token = ++checkToken;
+  debounceTimer = setTimeout(async () => {
+    const { data, error } = await client.from("profiles").select("id").eq("username", v).maybeSingle();
+    if (token !== checkToken) return;
+    if (error) { setMsg(msg, "Could not check right now. Please try again.", "error"); return; }
+    if (data) { setMsg(msg, "@" + v + " is already taken.", "error"); return; }
+    availableName = v;
+    setMsg(msg, "@" + v + " is available.", "ok");
+    $("usernameSave").disabled = false;
+  }, 350);
+});
+
+$("usernameForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!availableName) return;
+  const btn = $("usernameSave"), msg = $("usernameMsg");
+  const wanted = availableName;
+  setMsg(msg, "");
+  setBusy(btn, true);
+  try {
+    const { data, error } = await client.from("profiles").update({ username: wanted }).eq("id", me.user.id)
+      .select("display_name, username, status").maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error("Could not save your username. Please try again.");
+    me.profile = data;
+    showProfile();
+    setMsg($("profileMsg"), "Username saved: @" + data.username, "ok");
+    showScreen("profile");
+    setBusy(btn, false, "Save username");
+    btn.disabled = true;
+  } catch (error) {
+    console.error("MIZVO username save error:", error && error.code, error && error.message);
+    let text = "Could not save your username. Please try again.";
+    const m = (error && error.message ? error.message : "").toLowerCase();
+    if (error && error.code === "23505") text = "That username was just taken. Please choose another.";
+    else if (m.indexOf("reserved") !== -1) text = "That username is reserved. Please choose another.";
+    else if (m.indexOf("failed to fetch") !== -1 || m.indexOf("network") !== -1) text = "Network problem. Check your internet connection and try again.";
+    setMsg(msg, text, "error");
+    setBusy(btn, false, "Save username");
+    btn.disabled = true;
+    availableName = null;
+  }
+});
+
+// ---------- Contacts: find by exact @username ----------
+$("searchForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = $("searchMsg"), card = $("resultCard"), btn = $("searchBtn");
+  card.hidden = true;
+  const v = normalizeName($("searchInput").value.replace(/^@/, ""));
+  $("searchInput").value = v;
+  if (v.length < 3 || v.length > 20) { setMsg(msg, "Enter 3 to 20 letters, numbers or underscores.", "error"); return; }
+  setMsg(msg, "");
+  setBusy(btn, true);
+  try {
+    const { data, error } = await client.from("profiles").select("id, display_name, username, status").eq("username", v).maybeSingle();
+    if (error) throw error;
+    if (!data) { setMsg(msg, "No one found with that username."); return; }
+    $("resultName").textContent = (data.display_name || "").trim() || "MIZVO user";
+    $("resultHandle").textContent = "@" + data.username;
+    const status = (data.status || "").trim();
+    $("resultStatus").textContent = status;
+    $("resultStatus").hidden = !status;
+    $("resultNote").textContent = data.id === me.user.id ? "This is you." : "Messaging is coming soon.";
+    card.hidden = false;
+  } catch (error) {
+    console.error("MIZVO search error:", error && error.code, error && error.message);
+    setMsg(msg, "Could not search right now. Please try again.", "error");
+  } finally {
+    setBusy(btn, false, "Search");
+    btn.disabled = false;
+  }
+});
+
+// ---------- Log out and start-up ----------
 async function logout() {
   const btn = $("logoutBtn"), msg = $("profileMsg");
-  msg.textContent = "";
+  setMsg(msg, "");
   btn.disabled = true;
   try {
     const { error } = await client.auth.signOut();
     if (error) throw error;
     goToAuth();
   } catch (error) {
-    msg.textContent = "Log out failed: " + error.message;
+    setMsg(msg, "Log out failed: " + error.message, "error");
     btn.disabled = false;
   }
 }
@@ -206,10 +403,14 @@ async function initAuth() {
     const { data, error } = await client.auth.getSession();
     if (error) throw error;
     if (!data.session) { goToAuth(); return; }
-    const user = data.session.user;
-    showProfile(user, null);
+    me.user = data.session.user;
+    showProfile();
     document.body.classList.remove("locked");
-    showProfile(user, await loadProfile(user.id));
+    me.profile = await loadProfile(me.user.id);
+    showProfile();
+    let skipped = false;
+    try { skipped = sessionStorage.getItem("mizvo-skip-username") === "1"; } catch (e) {}
+    if (me.profile && !me.profile.username && !skipped) openUsername("chats");
   } catch (error) {
     showLoaderError("Could not check your login: " + error.message + ".");
   }
