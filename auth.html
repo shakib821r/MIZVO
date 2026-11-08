@@ -131,6 +131,7 @@ function setMode(next) {
   passwordInput.autocomplete = isSignup ? "new-password" : "current-password";
   showMsg("");
   updateSubmitState();
+  updateToggleLabel(passwordInput.type === "text");
 }
 
 function setBusy(on) {
@@ -150,12 +151,20 @@ $("switchMode").addEventListener("click", () => setMode(mode === "login" ? "sign
 $("forgotLink").addEventListener("click", () => setMode("forgot"));
 termsBox.addEventListener("change", updateSubmitState);
 
-$("togglePw").addEventListener("click", (e) => {
+// One button shows or hides BOTH password fields together
+function updateToggleLabel(show) {
+  const t = $("togglePw");
+  const many = !$("confirmField").hidden;
+  t.textContent = show ? "Hide" : "Show";
+  t.setAttribute("aria-pressed", String(show));
+  t.setAttribute("aria-label", (show ? "Hide password" : "Show password") + (many ? "s" : ""));
+}
+$("togglePw").addEventListener("click", () => {
   const show = passwordInput.type === "password";
-  passwordInput.type = show ? "text" : "password";
-  e.currentTarget.textContent = show ? "Hide" : "Show";
-  e.currentTarget.setAttribute("aria-pressed", String(show));
-  e.currentTarget.setAttribute("aria-label", show ? "Hide password" : "Show password");
+  const type = show ? "text" : "password";
+  passwordInput.type = type;
+  confirmInput.type = type;
+  updateToggleLabel(show);
 });
 
 function validate() {

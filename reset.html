@@ -1,65 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MIZVO | Reset Password</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>MIZVO | Reset password</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600&family=Manrope:wght@400;600&display=swap">
+<link rel="stylesheet" href="mizvo.css">
+<script src="mizvo-theme.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-*{box-sizing:border-box}
-body{
-margin:0;min-height:100vh;display:grid;place-items:center;
-background:#080d1c;color:white;font-family:Arial,sans-serif;padding:20px
-}
-.card{
-width:100%;max-width:390px;background:#111a30;padding:28px;
-border-radius:22px;border:1px solid #293653
-}
-.logo{text-align:center;font-size:36px;font-weight:900;color:#a78bfa}
-.sub{text-align:center;color:#aab4c9;margin:8px 0 25px}
-h2{text-align:center}
-input{
-width:100%;padding:15px;margin:8px 0;border-radius:10px;
-border:1px solid #34415d;background:#0b1325;color:white;font-size:15px
-}
-button{
-width:100%;padding:15px;margin-top:12px;border:0;border-radius:10px;
-background:#8061ed;color:white;font-weight:bold;font-size:15px;
-cursor:pointer
-}
-button:disabled{opacity:.5;cursor:not-allowed}
-.switch{text-align:center;margin-top:20px;color:#b9a8ff;cursor:pointer}
-.status{text-align:center;color:#b9c5df;font-size:14px;line-height:1.6;overflow-wrap:anywhere}
-#message{text-align:center;font-size:14px;margin-top:16px;color:#b9c5df;overflow-wrap:anywhere}
-.hidden{display:none}
-</style>
 </head>
 <body>
+<main class="m-page">
 
-<div class="card">
-<div class="logo">MIZVO</div>
-<div class="sub">Connect Beyond Boundaries</div>
+<svg width="48" height="48" viewBox="0 0 64 64" role="img" aria-label="MIZVO">
+<path d="M30 4A24 24 0 0 0 30 52Z" fill="var(--logo-left)"/>
+<path d="M34 12A24 24 0 0 1 34 60Z" fill="var(--logo-right)"/>
+</svg>
 
-<h2 id="heading">Reset Password</h2>
+<h1 class="m-title" id="heading">Reset password</h1>
+<p class="m-sub" id="subtitle">Checking your reset link...</p>
 
-<!-- Shown while the reset link is being checked, or when the link is invalid/expired -->
-<div id="statusBox">
-<div class="status" id="statusText">Checking your reset link...</div>
-<button type="button" id="newLinkBtn" class="hidden">Request a new link</button>
+<form id="resetForm" novalidate style="display:flex;flex-direction:column;gap:14px" hidden>
+<div class="m-field">
+<label for="newPassword">New password</label>
+<div class="m-pw">
+<input class="m-input" id="newPassword" type="password" autocomplete="new-password">
+<button class="m-toggle" id="togglePw" type="button" aria-pressed="false" aria-label="Show passwords">Show</button>
 </div>
-
-<!-- Shown only after a valid recovery link has been confirmed -->
-<form id="resetForm" class="hidden">
-<input id="newPassword" type="password" autocomplete="new-password"
-placeholder="New password (minimum 6 characters)" minlength="6" required>
-<input id="confirmPassword" type="password" autocomplete="new-password"
-placeholder="Confirm new password" minlength="6" required>
-<button id="updateBtn" type="submit">Update Password</button>
+</div>
+<div class="m-field">
+<label for="confirmPassword">Confirm new password</label>
+<input class="m-input" id="confirmPassword" type="password" autocomplete="new-password">
+</div>
+<button class="m-btn" id="updateBtn" type="submit">Update password</button>
 </form>
 
-<div class="switch" id="backToLogin">Back to Login</div>
-<div id="message"></div>
-</div>
+<button class="m-btn" id="newLinkBtn" type="button" hidden>Request a new link</button>
+
+<div class="m-msg" id="message" role="status" aria-live="polite"></div>
+
+<button class="m-link" id="backBtn" type="button">Back to sign in</button>
+
+</main>
 
 <script>
 const SUPABASE_URL = "https://xpeslwtkzeybwydhzcls.supabase.co";
@@ -72,111 +57,112 @@ const linkIsRecovery = linkParams.get("type") === "recovery";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const statusBox = document.getElementById("statusBox");
-const statusText = document.getElementById("statusText");
-const newLinkBtn = document.getElementById("newLinkBtn");
-const resetForm = document.getElementById("resetForm");
-const newPassword = document.getElementById("newPassword");
-const confirmPassword = document.getElementById("confirmPassword");
-const updateBtn = document.getElementById("updateBtn");
-const message = document.getElementById("message");
-const backToLogin = document.getElementById("backToLogin");
+const BUSY_ICON =
+'<svg width="22" height="22" viewBox="0 0 64 64" aria-hidden="true">' +
+'<path class="hl" d="M30 4A24 24 0 0 0 30 52Z" fill="var(--on-primary)"/>' +
+'<path class="hr" d="M34 12A24 24 0 0 1 34 60Z" fill="var(--mint)"/></svg><span>Please wait</span>';
+
+const $ = (id) => document.getElementById(id);
+const resetForm = $("resetForm"), newPassword = $("newPassword"), confirmPassword = $("confirmPassword");
+const updateBtn = $("updateBtn"), newLinkBtn = $("newLinkBtn"), message = $("message");
 
 let formShown = false;
-let finished = false;
+let expiredShown = false;
 let passwordUpdated = false;
 
-function showForm(){
-if (formShown || passwordUpdated) return;
-formShown = true;
-newLinkBtn.classList.add("hidden");
-statusBox.classList.add("hidden");
-resetForm.classList.remove("hidden");
-// Remove the one-time tokens from the address bar and browser history
-try { history.replaceState(null, "", window.location.pathname); } catch (e) {}
+function showMsg(text, isError) {
+  message.textContent = text || "";
+  message.className = "m-msg" + (isError ? " is-error" : "");
 }
 
-function showExpired(){
-if (formShown || finished) return;
-finished = true;
-statusText.textContent = "This reset link is invalid, already used, or has expired. Please request a new one.";
-newLinkBtn.classList.remove("hidden");
+function showForm() {
+  if (formShown || passwordUpdated) return;
+  formShown = true;
+  newLinkBtn.hidden = true;
+  $("heading").textContent = "Set a new password";
+  $("subtitle").textContent = "Choose a new password for your account.";
+  resetForm.hidden = false;
+  // Remove the one-time tokens from the address bar and browser history
+  try { history.replaceState(null, "", window.location.pathname); } catch (e) {}
 }
 
-function friendlyError(error){
-const text = (error && error.message) ? error.message : "Something went wrong. Please try again.";
-const lower = text.toLowerCase();
-if (lower.includes("different from the old password")) {
-return "Please choose a password you have not used before.";
-}
-if (lower.includes("session missing") || lower.includes("expired") || lower.includes("invalid")) {
-return "Your reset link has expired. Please request a new one.";
-}
-if (lower.includes("failed to fetch") || lower.includes("network")) {
-return "Network problem. Check your internet connection and try again.";
-}
-return text;
+function showExpired() {
+  if (formShown || expiredShown || passwordUpdated) return;
+  expiredShown = true;
+  $("heading").textContent = "Link expired";
+  $("subtitle").textContent = "This reset link is invalid, already used, or has expired. Please request a new one.";
+  newLinkBtn.hidden = false;
 }
 
-backToLogin.addEventListener("click", () => {
-window.location.href = "auth.html";
-});
+function friendlyError(error) {
+  const text = (error && error.message) ? error.message : "Something went wrong. Please try again.";
+  const lower = text.toLowerCase();
+  if (lower.includes("different from the old password")) return "Please choose a password you have not used before.";
+  if (lower.includes("session missing") || lower.includes("expired") || lower.includes("invalid")) return "Your reset link has expired. Please request a new one.";
+  if (lower.includes("failed to fetch") || lower.includes("network")) return "Network problem. Check your internet connection and try again.";
+  return text;
+}
 
-newLinkBtn.addEventListener("click", () => {
-window.location.href = "auth.html#forgot";
+$("backBtn").addEventListener("click", () => { window.location.href = "auth.html"; });
+newLinkBtn.addEventListener("click", () => { window.location.href = "auth.html#forgot"; });
+
+// One button shows or hides BOTH password fields together
+$("togglePw").addEventListener("click", (e) => {
+  const show = newPassword.type === "password";
+  const type = show ? "text" : "password";
+  newPassword.type = type;
+  confirmPassword.type = type;
+  e.currentTarget.textContent = show ? "Hide" : "Show";
+  e.currentTarget.setAttribute("aria-pressed", String(show));
+  e.currentTarget.setAttribute("aria-label", show ? "Hide passwords" : "Show passwords");
 });
 
 // Supabase tells us when a valid recovery link has been opened
 client.auth.onAuthStateChange((event) => {
-if (event === "PASSWORD_RECOVERY") showForm();
+  if (event === "PASSWORD_RECOVERY") showForm();
 });
 
 resetForm.addEventListener("submit", async (e) => {
-e.preventDefault();
-message.textContent = "";
+  e.preventDefault();
+  showMsg("");
 
-if (newPassword.value.length < 6) {
-message.textContent = "Password must be at least 6 characters.";
-return;
-}
-if (newPassword.value !== confirmPassword.value) {
-message.textContent = "The two passwords do not match.";
-return;
-}
+  if (newPassword.value.length < 6) { showMsg("Password must be at least 6 characters.", true); return; }
+  if (newPassword.value !== confirmPassword.value) { showMsg("The two passwords do not match.", true); return; }
 
-updateBtn.disabled = true;
-message.textContent = "Updating password...";
+  updateBtn.dataset.label = updateBtn.textContent;
+  updateBtn.classList.add("is-busy");
+  updateBtn.innerHTML = BUSY_ICON;
+  updateBtn.disabled = true;
 
-try {
-const { error } = await client.auth.updateUser({ password: newPassword.value });
-if (error) throw error;
+  try {
+    const { error } = await client.auth.updateUser({ password: newPassword.value });
+    if (error) throw error;
 
-passwordUpdated = true;
-message.textContent = "Password updated! Taking you to Login...";
-try { await client.auth.signOut(); } catch (err) {
-console.error("MIZVO signOut after reset:", err && err.message);
-}
-window.location.replace("auth.html#password-updated");
-} catch (error) {
-console.error("MIZVO reset error:", error && error.code, error && error.message);
-message.textContent = friendlyError(error);
-updateBtn.disabled = false;
-}
+    passwordUpdated = true;
+    showMsg("Password updated! Taking you to sign in...");
+    try { await client.auth.signOut(); } catch (err) {
+      console.error("MIZVO signOut after reset:", err && err.message);
+    }
+    window.location.replace("auth.html#password-updated");
+  } catch (error) {
+    console.error("MIZVO reset error:", error && error.code, error && error.message);
+    showMsg(friendlyError(error), true);
+    updateBtn.classList.remove("is-busy");
+    updateBtn.textContent = updateBtn.dataset.label;
+    updateBtn.disabled = false;
+  }
 });
 
 (async () => {
-if (linkHadError) {
-showExpired();
-return;
-}
-try {
-const { data } = await client.auth.getSession();
-if (data && data.session && linkIsRecovery) showForm();
-} catch (error) {
-console.error("MIZVO session check error:", error && error.message);
-}
-// If no valid recovery link was detected shortly after loading, treat it as invalid
-setTimeout(showExpired, 4000);
+  if (linkHadError) { showExpired(); return; }
+  try {
+    const { data } = await client.auth.getSession();
+    if (data && data.session && linkIsRecovery) showForm();
+  } catch (error) {
+    console.error("MIZVO session check error:", error && error.message);
+  }
+  // If no valid recovery link was detected shortly after loading, treat it as invalid
+  setTimeout(showExpired, 4000);
 })();
 </script>
 </body>
