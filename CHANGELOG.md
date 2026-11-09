@@ -1,6 +1,10 @@
 # MIZVO — Changelog
 
 ## 2026-11-08
+- Identity Card features, reported working by the founder:
+  - `index.html`: Edit profile (name and status, saved to `profiles`); Settings screen (Light/Dark/System moved here, email, language, change password with Show/Hide for both fields, sign out of all devices, Notifications and Delete account marked as not available yet); My QR code (QR, name, @username, the exact link, Copy link); scanned-link handling (`?u=username`, also after signing in).
+  - `qrcode.js` (new): self-hosted QR generator, MIT licence notice included. Checked by decoding its output with an independent scanner, both from the raw data and from the SVG shown in a browser engine.
+  - `mizvo.css`: styles for the text area, outline button, "later" rows and the QR box.
 - Contacts and usernames, tested by the founder (7 tests):
   - Database: added trigger `profiles_block_reserved_username` that blocks reserved usernames (anything starting with "mizvo", plus admin, support, official, staff and similar) for app users.
   - `index.html`: new Contacts tab (find by exact @username, shows name, @username, status; "This is you" for yourself); new Choose/Change @username screen (live cleaning, length and reserved-name feedback, availability check, Save; Skip for now / Cancel); Profile shows @username and a Choose/Change @username button.

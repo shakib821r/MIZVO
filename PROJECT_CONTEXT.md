@@ -12,18 +12,18 @@ Last updated: 2026-11-08
 - App language: English only
 
 ## Files in the repository
-- `index.html` — main app (new design): bottom navigation (Chats, Contacts, Profile), Chats empty state, Contacts (find a person by exact @username), Choose/Change @username screen, Profile (name, email, @username and status when set, Light/Dark/System, About, Log out), About MIZVO. Reads and updates the user's row in `profiles`.
+- `index.html` — main app (new design): bottom navigation (Chats, Contacts, Profile); Chats empty state; Contacts (find a person by exact @username); Choose/Change @username; Profile (name, email, @username, status) with Edit profile, My QR code, Settings, About MIZVO and Log out; Settings (Light/Dark/System, email, language, change password, sign out of all devices, "not available yet" items); a scanned profile link (`?u=username`) opens that person's card in Contacts. Reads and updates the user's row in `profiles`.
 - `auth.html` — new design: Sign in (default), Create account (confirm password, Terms checkbox), Forgot password. One Show/Hide button controls both password fields. Redirects to `index.html` after sign-in or when a session exists.
 - `reset.html` — new design: set a new password from the emailed link.
 - `terms.html`, `privacy.html` — plain-language DRAFTS, not reviewed by a lawyer.
-- `mizvo.css` — design tokens (light and dark) and shared components. `mizvo-theme.js` — Light / Dark / System theme.
+- `mizvo.css` — design tokens (light and dark) and shared components. `mizvo-theme.js` — Light / Dark / System theme. `qrcode.js` — QR code generator (MIT licence, Kazuhiko Arase; licence notice kept in the file), hosted in the repository.
 - `founder.jpg` — founder portrait (re-encoded, no EXIF data). `README.md`.
 - Documentation: PROJECT_CONTEXT.md, ARCHITECTURE.md, ROADMAP.md, BUGS.md, CHANGELOG.md, DECISIONS.md
 
 ## Redesign status (master prompt, staged, founder approves each stage)
 - Stage 1 audit: done. Stage 2: founder chose concept B "Halves". Stage 3: five Design Signatures and design system approved (with a deeper mint for the light-mode logo). Stage 4: screen designs approved with the founder's answers (see DECISIONS D-017 to D-021).
-- Stage 5 implementation, one screen at a time. Done and tested by the founder (2026-11-08): foundation, Sign in / Create account / Forgot password, Terms and Privacy drafts, Reset password, app shell with Chats and Profile and About, then Contacts and the choose-@username step (7 tests OK).
-- Still to build: Edit profile (name, status), QR profile code, Settings screen, Conversation (needs messaging).
+- Stage 5 implementation, one screen at a time. Done and tested by the founder (2026-11-08): foundation, Sign in / Create account / Forgot password, Terms and Privacy drafts, Reset password, app shell with Chats and Profile and About, then Contacts and the choose-@username step (7 tests OK), then Edit profile, Settings and the QR profile code (reported working).
+- Still to build: Conversation and the real chat list (need messaging, Step C).
 - Stage 6 testing and Stage 7 documentation continue after each step.
 
 ## Progress log
@@ -31,11 +31,11 @@ Last updated: 2026-11-08
 ### Completed and tested (reported by the founder)
 - Signup with a new email, verification email, login, logout, session persistence, Forgot Password (8 tests), About MIZVO (5 tests), Gmail SMTP delivery (email reached an outside address but landed in Spam).
 - Database Step B (2026-11-07): `profiles` extended with `username`, `status`, `updated_at`; security rules tested; signup trigger cuts the name to 50 characters.
-- Redesign Stage 5 (2026-11-08): auth screens (6 tests), Show/Hide for both password fields, plain Terms and Privacy text, reset.html (4 tests), app shell (6 tests), Contacts and choose/change @username (7 tests) — all reported OK.
+- Redesign Stage 5 (2026-11-08): auth screens (6 tests), Show/Hide for both password fields, plain Terms and Privacy text, reset.html (4 tests), app shell (6 tests), Contacts and choose/change @username (7 tests), Edit profile, Settings and QR code — all reported OK.
 
 ### Pending (order agreed with the founder)
-1. Stage 5 next steps: Edit profile and Settings screen, then the QR profile code
-2. Step C: one-to-one messaging with Supabase Realtime, built in the new design (the founder decides the encryption approach first)
+1. Step C planning: decide the storage and encryption approach and the first-version scope
+2. Step C build: one-to-one messaging with Supabase Realtime, built in the new design
 - Optional: improve email templates in the Supabase dashboard; domain-based email sending (needs a purchased domain and the founder's approval)
 
 ### Open risks
@@ -65,5 +65,5 @@ Last updated: 2026-11-08
 - Exact root cause of the earlier "cannot login after logout" bug (fix confirmed working).
 - Why the verification email went to Spam (BUG-007).
 - A real signup with a name longer than 50 characters (BUG-008): verified only by reading the function source.
-- The "username already taken" message and two-account behavior: not tested yet (needs a second account of the founder's own).
+- The "username already taken" message on the real database: not tested yet (needs a second account of the founder's own). Automated checks in a simulated Supabase passed; the real database, password-change rules and phone-camera QR scanning are covered only by the founder's manual report.
 - Display on devices other than the founder's phone; no automated tests exist.

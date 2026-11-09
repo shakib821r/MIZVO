@@ -87,3 +87,14 @@
 - Choosing a username can be skipped for now (remembered per browser session); it will be needed once messaging exists.
 - Reserved names are blocked in the database for app users (anything starting with "mizvo" and a fixed list). The founder can set his own through the SQL Editor.
 - Searching by exact @username is a usage rule, not a security wall: signed-in users can technically read all profiles (D-012).
+
+## D-023 — QR profile code design (2026-11-08)
+- The QR code contains only a username-based link (`?u=username`). No email, no user id, no other private data. Opening it requires being signed in to MIZVO.
+- Changing the username makes the old code stop working; the QR screen says so.
+
+## D-024 — Self-hosted, MIT-licensed QR generator (2026-11-08)
+- The generator is a bundled copy of Kazuhiko Arase's MIT-licensed QRCode for JavaScript, kept in the repository as `qrcode.js` with its licence notice, so the app does not depend on an outside server for it.
+- It was verified by decoding its output with OpenCV's QR detector. Phone-camera scanning is confirmed only by the founder's report.
+
+## D-025 — Settings contents (2026-11-08)
+- Theme, email (read-only), language (English), change password, sign out of all devices. Notifications and Delete account are listed under "Not available yet" because they need messaging, push support or a server function.

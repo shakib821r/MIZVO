@@ -29,6 +29,7 @@
 - Cause: Android renamed the downloaded file to "auth (1).html"; uploading it created a new file instead of replacing `auth.html`.
 - Fix: deleted the old `auth.html`, renamed `auth (1).html` to `auth.html` on GitHub.
 - Prevention: after every upload, check the file list for names with "(1)" and confirm the line count of the changed file.
+- Seen again on 2026-11-08: the new `index.html` was not live at first (new Profile rows missing). The exact cause was not confirmed (a renamed duplicate file or an old cached page); it worked after the file list and line count were checked again.
 
 ## BUG-007 — Verification email lands in Spam (open, mitigated)
 - Status: Open; mitigated in the interface.
