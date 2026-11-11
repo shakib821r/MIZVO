@@ -2,7 +2,7 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="color-scheme" content="light dark">
 <title>MIZVO</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,13 +28,15 @@
 </svg>
 <h1 class="m-h1" id="chatsTitle">Chats</h1>
 </header>
-<div class="m-empty">
+<div class="m-msg" id="chatsMsg" role="status" aria-live="polite"></div>
+<div class="m-chatlist" id="chatList"></div>
+<div class="m-empty" id="chatsEmpty" hidden>
 <svg width="96" height="96" viewBox="0 0 64 64" aria-hidden="true">
 <path d="M30 4A24 24 0 0 0 30 52Z" fill="var(--logo-left)"/>
 <path d="M34 12A24 24 0 0 1 34 60Z" fill="var(--logo-right)"/>
 </svg>
 <h2>No conversations yet</h2>
-<p>Messaging is coming soon. Your conversations will appear here.</p>
+<p>Find someone in Contacts to start a chat.</p>
 </div>
 </section>
 
@@ -61,6 +63,8 @@
 </div>
 <p id="resultStatus" hidden></p>
 <p class="m-muted" id="resultNote"></p>
+<button class="m-btn" id="messageBtn" type="button" hidden>Message</button>
+<div class="m-msg" id="resultMsg" role="status" aria-live="polite"></div>
 </div>
 </section>
 
@@ -106,6 +110,31 @@
 <button class="m-rowbtn" type="button" id="aboutBtn"><span>About MIZVO</span><span aria-hidden="true">&rsaquo;</span></button>
 <button class="m-rowbtn m-danger" type="button" id="logoutBtn">Log out</button>
 <div class="m-msg" id="profileMsg" role="status" aria-live="polite"></div>
+</section>
+
+<!-- Conversation -->
+<section id="conversation" class="screen" aria-labelledby="convName">
+<header class="m-convo-head">
+<button class="m-iconbtn" type="button" id="convBack" aria-label="Back to chats">&lsaquo;</button>
+<div class="m-avatar" style="width:40px;height:40px" aria-hidden="true"></div>
+<div style="min-width:0;flex:1">
+<div class="m-name" id="convName" style="font-size:16px"></div>
+<div class="m-muted" id="convHandle"></div>
+</div>
+<button class="m-link" type="button" id="blockBtn">Block</button>
+</header>
+<button class="m-link" type="button" id="loadOlder" hidden>Load older messages</button>
+<div class="m-thread" id="threadList"></div>
+<div class="m-msg" id="convMsg" role="status" aria-live="polite"></div>
+</section>
+
+<!-- Blocked people -->
+<section id="blocked" class="screen" aria-labelledby="blockedTitle">
+<button class="m-back" type="button" id="blockedBack">&larr; Back to Settings</button>
+<h1 class="m-h1" id="blockedTitle">Blocked people</h1>
+<div class="m-msg" id="blockedMsg" role="status" aria-live="polite"></div>
+<div id="blockedList" style="display:flex;flex-direction:column;gap:10px"></div>
+<p class="m-muted" id="blockedEmpty" hidden>You have not blocked anyone.</p>
 </section>
 
 <!-- Edit profile -->
@@ -183,6 +212,7 @@
 <div class="m-msg" id="pwMsg" role="status" aria-live="polite"></div>
 <button class="m-btn" id="pwSave" type="submit">Update password</button>
 </form>
+<button class="m-rowbtn" type="button" id="blockedBtn"><span>Blocked people</span><span aria-hidden="true">&rsaquo;</span></button>
 <button class="m-rowbtn" type="button" id="signOutAll"><span>Sign out of all devices</span><span aria-hidden="true">&rsaquo;</span></button>
 <div class="m-msg" id="settingsMsg" role="status" aria-live="polite"></div>
 
@@ -232,6 +262,14 @@ onerror="this.hidden=true;document.getElementById('founderFallback').hidden=fals
 
 </div>
 
+<div class="m-composer-wrap" id="composerWrap">
+<form class="m-composer" id="composer" novalidate>
+<textarea id="composeInput" rows="1" maxlength="2000" placeholder="Message" aria-label="Message"></textarea>
+<button class="m-send" id="sendBtn" type="submit" aria-label="Send">&uarr;</button>
+</form>
+<div class="m-blockednote" id="blockedNote" hidden>You blocked this person. Unblock to send messages.</div>
+</div>
+
 <nav class="m-nav" aria-label="Main">
 <button type="button" data-go="chats" aria-current="page">Chats</button>
 <button type="button" data-go="contacts">Contacts</button>
@@ -273,7 +311,8 @@ function showLoaderError(text) {
 
 function showScreen(id) {
   document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("active", s.id === id));
-  const tab = (id === "chats" || id === "contacts") ? id : "profile";
+  const tab = (id === "chats" || id === "conversation") ? "chats" : (id === "contacts" ? "contacts" : "profile");
+  document.body.classList.toggle("in-chat", id === "conversation");
   document.querySelectorAll(".m-nav button").forEach((b) => {
     if (b.dataset.go === tab) b.setAttribute("aria-current", "page");
     else b.removeAttribute("aria-current");
@@ -293,7 +332,10 @@ function setBusy(btn, on, label) {
   }
 }
 
-document.querySelectorAll(".m-nav button").forEach((b) => b.addEventListener("click", () => showScreen(b.dataset.go)));
+document.querySelectorAll(".m-nav button").forEach((b) => b.addEventListener("click", () => {
+  showScreen(b.dataset.go);
+  if (b.dataset.go === "chats") loadChats();
+}));
 $("aboutBtn").addEventListener("click", () => showScreen("about"));
 $("aboutBack").addEventListener("click", () => showScreen("profile"));
 
@@ -428,9 +470,11 @@ $("usernameForm").addEventListener("submit", async (e) => {
 });
 
 // ---------- Contacts: find by exact @username ----------
+let foundPerson = null;
 async function doSearch(v) {
   const msg = $("searchMsg"), card = $("resultCard"), btn = $("searchBtn");
   card.hidden = true;
+  foundPerson = null;
   $("searchInput").value = v;
   if (v.length < 3 || v.length > 20) { setMsg(msg, "Enter 3 to 20 letters, numbers or underscores.", "error"); return; }
   setMsg(msg, "");
@@ -444,7 +488,11 @@ async function doSearch(v) {
     const status = (data.status || "").trim();
     $("resultStatus").textContent = status;
     $("resultStatus").hidden = !status;
-    $("resultNote").textContent = data.id === me.user.id ? "This is you." : "Messaging is coming soon.";
+    const isMe = data.id === me.user.id;
+    foundPerson = isMe ? null : data;
+    $("resultNote").textContent = isMe ? "This is you." : "";
+    $("messageBtn").hidden = isMe;
+    setMsg($("resultMsg"), "");
     card.hidden = false;
   } catch (error) {
     console.error("MIZVO search error:", error && error.code, error && error.message);
@@ -596,6 +644,365 @@ $("signOutAll").addEventListener("click", async () => {
   }
 });
 
+
+// ---------- Messaging ----------
+let currentChat = null;      // { id, otherId, name, username, blocked }
+let thread = [];             // messages of the open chat, oldest first
+let chatsTimer = null;
+const MAX_LEN = 2000;
+
+function dayKey(d) { return d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate(); }
+function fmtClock(iso) { return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); }
+function fmtDay(iso) {
+  const d = new Date(iso), n = new Date(), y = new Date(n);
+  y.setDate(n.getDate() - 1);
+  if (dayKey(d) === dayKey(n)) return "Today";
+  if (dayKey(d) === dayKey(y)) return "Yesterday";
+  return d.toLocaleDateString([], { day: "numeric", month: "short", year: d.getFullYear() === n.getFullYear() ? undefined : "numeric" });
+}
+function fmtListTime(iso) { return dayKey(new Date(iso)) === dayKey(new Date()) ? fmtClock(iso) : fmtDay(iso); }
+
+function makeAvatar() {
+  const a = document.createElement("div");
+  a.className = "m-avatar";
+  a.setAttribute("aria-hidden", "true");
+  return a;
+}
+
+// ----- Chat list -----
+function renderChats(rows) {
+  const list = $("chatList");
+  list.replaceChildren();
+  $("chatsEmpty").hidden = rows.length > 0;
+  rows.forEach((r) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "m-chat";
+    const main = document.createElement("div");
+    main.className = "m-chat-main";
+    const name = document.createElement("div");
+    name.className = "m-chat-name";
+    name.textContent = (r.other_name || "").trim() || (r.other_username ? "@" + r.other_username : "MIZVO user");
+    const last = document.createElement("div");
+    last.className = "m-chat-last";
+    if (r.i_blocked) last.textContent = "Blocked";
+    else if (r.last_body) last.textContent = (r.last_sender === me.user.id ? "You: " : "") + r.last_body;
+    else last.textContent = "No messages yet";
+    main.append(name, last);
+    const side = document.createElement("div");
+    side.className = "m-chat-side";
+    const time = document.createElement("div");
+    time.textContent = r.last_at ? fmtListTime(r.last_at) : "";
+    side.append(time);
+    if (r.unread_count > 0) {
+      const badge = document.createElement("div");
+      badge.className = "m-count";
+      badge.textContent = r.unread_count > 99 ? "99+" : String(r.unread_count);
+      badge.setAttribute("aria-label", r.unread_count + " unread");
+      side.append(badge);
+    }
+    btn.append(makeAvatar(), main, side);
+    btn.addEventListener("click", () => openConversation({
+      id: r.conversation_id, otherId: r.other_user_id, name: name.textContent,
+      username: r.other_username, blocked: r.i_blocked
+    }));
+    list.append(btn);
+  });
+}
+
+async function loadChats() {
+  try {
+    const { data, error } = await client.rpc("my_chats");
+    if (error) throw error;
+    setMsg($("chatsMsg"), "");
+    renderChats(data || []);
+  } catch (error) {
+    console.error("MIZVO chats load error:", error && error.code, error && error.message);
+    setMsg($("chatsMsg"), "Could not load your chats. Please try again.", "error");
+  }
+}
+function scheduleChatsRefresh() {
+  clearTimeout(chatsTimer);
+  chatsTimer = setTimeout(loadChats, 300);
+}
+
+// ----- Conversation -----
+function renderThread(mode) {
+  const box = $("threadList");
+  const nearBottom = (window.innerHeight + window.scrollY) >= (document.body.scrollHeight - 160);
+  const oldHeight = document.body.scrollHeight;
+  box.replaceChildren();
+  if (!thread.length) {
+    const empty = document.createElement("div");
+    empty.className = "m-thread-empty";
+    empty.textContent = "No messages yet. Say hello! Messages are not end-to-end encrypted.";
+    box.append(empty);
+  }
+  let lastDay = "";
+  thread.forEach((m) => {
+    const key = dayKey(new Date(m.created_at));
+    if (key !== lastDay) {
+      lastDay = key;
+      const d = document.createElement("div");
+      d.className = "m-day";
+      d.textContent = fmtDay(m.created_at);
+      box.append(d);
+    }
+    const b = document.createElement("div");
+    b.className = "m-bubble " + (m.sender_id === me.user.id ? "me" : "them");
+    const text = document.createElement("span");
+    text.textContent = m.body;
+    const t = document.createElement("span");
+    t.className = "m-time";
+    t.textContent = fmtClock(m.created_at);
+    b.append(text, t);
+    box.append(b);
+  });
+  if (mode === "bottom" || (mode === "near" && nearBottom)) window.scrollTo(0, document.body.scrollHeight);
+  else if (mode === "keep") window.scrollTo(0, window.scrollY + (document.body.scrollHeight - oldHeight));
+}
+
+function updateBlockUI() {
+  const blocked = Boolean(currentChat && currentChat.blocked);
+  $("blockBtn").textContent = blocked ? "Unblock" : "Block";
+  $("composer").hidden = blocked;
+  $("blockedNote").hidden = !blocked;
+}
+
+async function loadMessages(older) {
+  if (!currentChat) return;
+  const chatId = currentChat.id;
+  let q = client.from("messages").select("id, sender_id, body, created_at").eq("conversation_id", chatId)
+    .order("created_at", { ascending: false }).limit(50);
+  if (older && thread.length) q = q.lt("created_at", thread[0].created_at);
+  const { data, error } = await q;
+  if (!currentChat || currentChat.id !== chatId) return;
+  if (error) throw error;
+  const rows = (data || []).slice().reverse();
+  const known = new Set(thread.map((m) => m.id));
+  const fresh = rows.filter((m) => !known.has(m.id));
+  thread = fresh.concat(thread);
+  thread.sort((x, y) => (x.created_at < y.created_at ? -1 : x.created_at > y.created_at ? 1 : 0));
+  $("loadOlder").hidden = (data || []).length < 50;
+  renderThread(older ? "keep" : "bottom");
+}
+
+async function markRead() {
+  if (!currentChat) return;
+  try { await client.rpc("mark_chat_read", { conv: currentChat.id }); }
+  catch (error) { console.error("MIZVO mark read error:", error && error.message); }
+}
+
+async function openConversation(chat) {
+  currentChat = chat;
+  thread = [];
+  $("threadList").replaceChildren();
+  $("loadOlder").hidden = true;
+  $("convName").textContent = chat.name || "MIZVO user";
+  $("convHandle").textContent = chat.username ? "@" + chat.username : "";
+  $("composeInput").value = "";
+  setMsg($("convMsg"), "");
+  updateBlockUI();
+  showScreen("conversation");
+  try {
+    await loadMessages(false);
+    await markRead();
+  } catch (error) {
+    console.error("MIZVO messages load error:", error && error.code, error && error.message);
+    setMsg($("convMsg"), "Could not load messages. Please try again.", "error");
+  }
+}
+
+$("convBack").addEventListener("click", () => {
+  currentChat = null;
+  showScreen("chats");
+  loadChats();
+});
+$("loadOlder").addEventListener("click", async () => {
+  try { await loadMessages(true); }
+  catch (error) { setMsg($("convMsg"), "Could not load older messages.", "error"); }
+});
+
+// Sending
+const composeInput = $("composeInput");
+composeInput.addEventListener("input", () => {
+  composeInput.style.height = "auto";
+  composeInput.style.height = Math.min(composeInput.scrollHeight, 140) + "px";
+});
+composeInput.addEventListener("keydown", (e) => {
+  const desktop = window.matchMedia && window.matchMedia("(pointer: fine)").matches;
+  if (desktop && e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("composer").requestSubmit(); }
+});
+
+$("composer").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!currentChat) return;
+  const body = composeInput.value.trim();
+  if (!body) return;
+  if (body.length > MAX_LEN) { setMsg($("convMsg"), "A message can have at most 2,000 characters.", "error"); return; }
+  const btn = $("sendBtn");
+  btn.disabled = true;
+  setMsg($("convMsg"), "");
+  try {
+    const { data, error } = await client.from("messages")
+      .insert({ conversation_id: currentChat.id, sender_id: me.user.id, body: body })
+      .select("id, sender_id, body, created_at").single();
+    if (error) throw error;
+    if (!thread.some((m) => m.id === data.id)) thread.push(data);
+    composeInput.value = "";
+    composeInput.style.height = "auto";
+    renderThread("bottom");
+  } catch (error) {
+    console.error("MIZVO send error:", error && error.code, error && error.message);
+    const m = (error && error.message ? error.message : "").toLowerCase();
+    let text = "This message could not be sent. Please try again.";
+    if (error && (error.code === "42501" || m.indexOf("row-level security") !== -1)) text = "This message could not be sent. This chat may no longer be available.";
+    else if (m.indexOf("failed to fetch") !== -1 || m.indexOf("network") !== -1) text = "Network problem. Your message is still in the box. Check your connection and try again.";
+    setMsg($("convMsg"), text, "error");
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// New messages arrive in real time
+function onNewMessage(m) {
+  if (!m || !me.user) return;
+  if (currentChat && m.conversation_id === currentChat.id) {
+    if (!thread.some((x) => x.id === m.id)) {
+      thread.push({ id: m.id, sender_id: m.sender_id, body: m.body, created_at: m.created_at });
+      renderThread("near");
+    }
+    if (m.sender_id !== me.user.id) markRead();
+  } else {
+    scheduleChatsRefresh();
+  }
+}
+let realtimeStarted = false, wasSubscribed = false;
+function startRealtime() {
+  if (realtimeStarted) return;
+  realtimeStarted = true;
+  client.channel("mizvo-messages")
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload) => onNewMessage(payload.new))
+    .subscribe((status) => {
+      if (status === "SUBSCRIBED") {
+        // After a reconnect, fetch anything that was missed
+        if (wasSubscribed) {
+          loadChats();
+          if (currentChat) loadMessages(false).catch(() => {});
+        }
+        wasSubscribed = true;
+      }
+    });
+}
+
+// ----- Start a chat from Contacts -----
+$("messageBtn").addEventListener("click", async () => {
+  if (!foundPerson) return;
+  const btn = $("messageBtn"), person = foundPerson;
+  setMsg($("resultMsg"), "");
+  setBusy(btn, true);
+  try {
+    const { data, error } = await client.rpc("start_direct_chat", { other: person.id });
+    if (error) throw error;
+    let blocked = false;
+    const b = await client.from("blocks").select("blocked_id").eq("blocked_id", person.id).maybeSingle();
+    if (!b.error && b.data) blocked = true;
+    await openConversation({
+      id: data, otherId: person.id,
+      name: (person.display_name || "").trim() || "MIZVO user",
+      username: person.username, blocked: blocked
+    });
+  } catch (error) {
+    console.error("MIZVO start chat error:", error && error.code, error && error.message);
+    const text = (error && error.code === "42501")
+      ? "You cannot start a chat with this person."
+      : "Could not start the chat. Please try again.";
+    setMsg($("resultMsg"), text, "error");
+  } finally {
+    setBusy(btn, false, "Message");
+    btn.disabled = false;
+  }
+});
+
+// ----- Block / Unblock -----
+$("blockBtn").addEventListener("click", async () => {
+  if (!currentChat) return;
+  const btn = $("blockBtn");
+  setMsg($("convMsg"), "");
+  if (!currentChat.blocked) {
+    if (!window.confirm("Block " + (currentChat.name || "this person") + "? Neither of you will be able to send messages in this chat until you unblock.")) return;
+  }
+  btn.disabled = true;
+  try {
+    if (!currentChat.blocked) {
+      const { error } = await client.from("blocks").insert({ blocker_id: me.user.id, blocked_id: currentChat.otherId });
+      if (error && error.code !== "23505") throw error;
+      currentChat.blocked = true;
+    } else {
+      const { error } = await client.from("blocks").delete().eq("blocker_id", me.user.id).eq("blocked_id", currentChat.otherId);
+      if (error) throw error;
+      currentChat.blocked = false;
+    }
+    updateBlockUI();
+    loadChats();
+  } catch (error) {
+    console.error("MIZVO block error:", error && error.code, error && error.message);
+    setMsg($("convMsg"), "Could not change the block setting. Please try again.", "error");
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ----- Blocked people (Settings) -----
+async function loadBlocked() {
+  const list = $("blockedList");
+  setMsg($("blockedMsg"), "");
+  try {
+    const { data: rows, error } = await client.from("blocks").select("blocked_id, created_at").order("created_at", { ascending: false });
+    if (error) throw error;
+    list.replaceChildren();
+    $("blockedEmpty").hidden = (rows || []).length > 0;
+    if (!rows || !rows.length) return;
+    const ids = rows.map((r) => r.blocked_id);
+    const { data: people, error: e2 } = await client.from("profiles").select("id, display_name, username").in("id", ids);
+    if (e2) throw e2;
+    const byId = {};
+    (people || []).forEach((p) => { byId[p.id] = p; });
+    rows.forEach((r) => {
+      const p = byId[r.blocked_id] || {};
+      const row = document.createElement("div");
+      row.className = "m-person";
+      const info = document.createElement("div");
+      info.style.cssText = "flex:1;min-width:0";
+      const n = document.createElement("div");
+      n.className = "m-chat-name";
+      n.textContent = (p.display_name || "").trim() || "MIZVO user";
+      const h = document.createElement("div");
+      h.className = "m-muted";
+      h.textContent = p.username ? "@" + p.username : "";
+      info.append(n, h);
+      const un = document.createElement("button");
+      un.type = "button";
+      un.className = "m-btn m-outline";
+      un.textContent = "Unblock";
+      un.addEventListener("click", async () => {
+        un.disabled = true;
+        const { error: e3 } = await client.from("blocks").delete().eq("blocker_id", me.user.id).eq("blocked_id", r.blocked_id);
+        if (e3) { setMsg($("blockedMsg"), "Could not unblock. Please try again.", "error"); un.disabled = false; return; }
+        loadBlocked();
+        loadChats();
+      });
+      row.append(makeAvatar(), info, un);
+      list.append(row);
+    });
+  } catch (error) {
+    console.error("MIZVO blocked list error:", error && error.code, error && error.message);
+    setMsg($("blockedMsg"), "Could not load your blocked people. Please try again.", "error");
+  }
+}
+$("blockedBtn").addEventListener("click", () => { showScreen("blocked"); loadBlocked(); });
+$("blockedBack").addEventListener("click", () => showScreen("settings"));
+
 // ---------- Log out and start-up ----------
 async function logout() {
   const btn = $("logoutBtn"), msg = $("profileMsg");
@@ -643,6 +1050,8 @@ async function initAuth() {
     document.body.classList.remove("locked");
     me.profile = await loadProfile(me.user.id);
     showProfile();
+    loadChats();
+    startRealtime();
     let skipped = false;
     try { skipped = sessionStorage.getItem("mizvo-skip-username") === "1"; } catch (e) {}
     if (incoming) {
