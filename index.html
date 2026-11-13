@@ -856,7 +856,8 @@ $("composer").addEventListener("submit", async (e) => {
     console.error("MIZVO send error:", error && error.code, error && error.message);
     const m = (error && error.message ? error.message : "").toLowerCase();
     let text = "This message could not be sent. Please try again.";
-    if (error && (error.code === "42501" || m.indexOf("row-level security") !== -1)) text = "This message could not be sent. This chat may no longer be available.";
+    if (error && error.code === "54000") text = "You are sending messages too fast. Please wait a moment and try again.";
+    else if (error && (error.code === "42501" || m.indexOf("row-level security") !== -1)) text = "This message could not be sent. This chat may no longer be available.";
     else if (m.indexOf("failed to fetch") !== -1 || m.indexOf("network") !== -1) text = "Network problem. Your message is still in the box. Check your connection and try again.";
     setMsg($("convMsg"), text, "error");
   } finally {
@@ -914,9 +915,11 @@ $("messageBtn").addEventListener("click", async () => {
     });
   } catch (error) {
     console.error("MIZVO start chat error:", error && error.code, error && error.message);
-    const text = (error && error.code === "42501")
-      ? "You cannot start a chat with this person."
-      : "Could not start the chat. Please try again.";
+    const text = (error && error.code === "54000")
+      ? "You have started too many new chats. Please try again later."
+      : (error && error.code === "42501")
+        ? "You cannot start a chat with this person."
+        : "Could not start the chat. Please try again.";
     setMsg($("resultMsg"), text, "error");
   } finally {
     setBusy(btn, false, "Message");
