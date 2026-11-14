@@ -98,3 +98,19 @@
 
 ## D-025 — Settings contents (2026-11-08)
 - Theme, email (read-only), language (English), change password, sign out of all devices. Notifications and Delete account are listed under "Not available yet" because they need messaging, push support or a server function.
+
+## D-026 — Messages are plain text protected by Row Level Security (2026-11-09, founder's choice)
+- Not end-to-end encrypted. Chosen for a safe, simple first version within a ৳0 budget. The Privacy Policy and the empty chat screen say so. End-to-end encryption would be a separate, large project.
+
+## D-027 — First messaging version and blocking rules (2026-11-09, approved)
+- One-to-one text only, 2,000 characters, unread badges, real-time delivery. No read receipts, typing indicator, media, edit, delete, groups or notifications yet.
+- Blocking works both ways for sending: the blocked person and the blocker cannot send in that chat or start a new one until unblocked. History stays visible to both. The blocker can see their own block list; nobody can see who blocked them.
+
+## D-028 — Database-enforced limits and server time (2026-11-09)
+- Message time and read time come from the server clock; clients cannot choose them. Clients can insert only the columns they need. Messages are immutable for now.
+
+## D-029 — Rate limits (2026-11-13, approved by the founder)
+- 10 messages per 10 seconds and 600 per hour per sender; 20 new chats per hour per person. Enforced in the database so they cannot be bypassed from the browser. Numbers can be changed later in one SQL script.
+
+## D-030 — Promises in Terms and Privacy (2026-11-13, confirmed by the founder)
+- Accounts are deleted on request by email; deleting an account also deletes the messages that person sent. Not intended for children under 13 (no age check yet). Personal data is not sold. Messages are not end-to-end encrypted. Data is shared with trusted service providers. These must stay true; if any stops being true, the pages must change first.

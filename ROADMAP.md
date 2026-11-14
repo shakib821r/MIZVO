@@ -10,11 +10,15 @@
 7. Redesign (concept B "Halves"): design system, theme (Light / Dark / System), auth screens, reset screen, Terms and Privacy drafts, app shell with Chats, Profile and About — all tested by the founder (2026-11-08)
 8. Contacts (find by exact @username) and choose/change @username with reserved-name protection — tested by the founder (2026-11-08)
 9. Profile Identity Card: Edit profile, Settings, My QR code with scan-to-open links — reported working by the founder (2026-11-08)
+10. One-to-one messaging with unread badges, real-time delivery and Block — tested by the founder with two accounts (2026-11-09)
+11. Message and new-chat rate limits — database test passed (2026-11-13)
 
-## Next (order agreed with the founder; steps are given three at a time)
-- Step C planning: decide the storage and encryption approach and the first-version scope
-- Step C build: database tables with Row Level Security (conversations, members, messages), a safe "start chat" function, Realtime delivery, the Conversation screen and the real chat list, built in the new design
-- After Step C: blocking users, message deletion, read receipts, notifications (each needs its own plan)
+## Next (steps are given three at a time)
+- Better email templates for confirmation and password reset (free; may reduce Spam placement)
+- Abuse reporting: a Report button, a table of reports and a review routine
+- Data export routine and keeping the project active
+- A knowledgeable review of Terms and Privacy
+- Then: message deletion, read receipts, notifications (each needs its own plan)
 
 ## Optional / later (needs planning and approval)
 - Improve the confirmation and reset email templates (free, may reduce spam placement)

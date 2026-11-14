@@ -48,3 +48,11 @@
 - Status: Open (platform limit, not a code bug).
 - Third-party pricing guides say free projects pause after about one week of inactivity. A paused project makes the app stop working until it is restored from the Supabase dashboard.
 - Mitigation: check the project regularly; confirm the rule on Supabase's official pricing page; plan before real users arrive (any paid option needs the founder's approval).
+
+- Confirmed on Supabase's own pages (2026-11-13): free projects are paused when they have too little database activity over 7 days, the owner gets a warning email about a week earlier, and the project is resumed from the dashboard. A few database requests per day usually keep it active, but this is not a guarantee. Their pages differ on how long a paused project can be restored (90 days or 1 year), so resume it quickly.
+
+## BUG-010 — Clients could choose the message time (found and fixed 2026-11-09, before launch)
+- Status: Fixed.
+- Cause: the first messaging permissions let a signed-in person insert a value for `created_at`, so someone could place messages in the past or future and distort ordering and unread counts.
+- Fix: insert permission is limited to `conversation_id`, `sender_id` and `body` (same for blocks); "mark as read" uses the server clock through `mark_chat_read`.
+- Check: a rolled-back test confirmed that setting the time is refused.

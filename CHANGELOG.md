@@ -1,5 +1,16 @@
 # MIZVO — Changelog
 
+## 2026-11-13
+- Rate limits (database, run by the founder, rolled-back test passed): trigger `messages_limit_rate` (10 messages per 10 seconds, 600 per hour per sender); new chats limited to 20 per hour per person in `start_direct_chat` (new column `conversations.created_by`, two indexes). `index.html` (1076 lines) shows "You are sending messages too fast..." and "You have started too many new chats...".
+- The founder confirmed the promises in Terms and Privacy (see PROJECT_CONTEXT, Open risks). `database.sql` now records the rate-limit script.
+
+## 2026-11-09
+- Messaging (Step C), tested by the founder with two accounts:
+  - Database: new tables `conversations`, `conversation_members`, `messages`, `blocks` with Row Level Security; functions `start_direct_chat`, `my_chats`, `mark_chat_read`, `mizvo_is_member`, `mizvo_can_send`; Realtime on `messages`. A security fix before launch: clients can no longer set the message time (column-level permission), and read time uses the server clock. Rolled-back checks passed. Script saved as `database-messaging.sql`.
+  - `index.html`: real chat list (last message, time, unread badge, "Blocked" label), Conversation screen (bubbles with the approved closing corner, day separators, load older, real-time delivery, send errors keep your text), Message button on Contacts cards, Block/Unblock in the chat, Settings → Blocked people. The chat screen says messages are not end-to-end encrypted.
+  - `mizvo.css`: messaging styles. `privacy.html`: Messages section.
+  - `index.html`: friendly messages for the upcoming rate-limit error codes.
+
 ## 2026-11-08
 - Identity Card features, reported working by the founder:
   - `index.html`: Edit profile (name and status, saved to `profiles`); Settings screen (Light/Dark/System moved here, email, language, change password with Show/Hide for both fields, sign out of all devices, Notifications and Delete account marked as not available yet); My QR code (QR, name, @username, the exact link, Copy link); scanned-link handling (`?u=username`, also after signing in).
