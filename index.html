@@ -121,11 +121,42 @@
 <div class="m-name" id="convName" style="font-size:16px"></div>
 <div class="m-muted" id="convHandle"></div>
 </div>
+<button class="m-link" type="button" id="reportBtn">Report</button>
 <button class="m-link" type="button" id="blockBtn">Block</button>
 </header>
 <button class="m-link" type="button" id="loadOlder" hidden>Load older messages</button>
 <div class="m-thread" id="threadList"></div>
 <div class="m-msg" id="convMsg" role="status" aria-live="polite"></div>
+</section>
+
+<!-- Report -->
+<section id="report" class="screen" aria-labelledby="reportTitle">
+<button class="m-back" type="button" id="reportBack">&larr; Back to chat</button>
+<h1 class="m-h1" id="reportTitle">Report this person</h1>
+<form id="reportForm" novalidate style="display:flex;flex-direction:column;gap:14px">
+<fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:2px">
+<legend class="m-label" style="padding:0;margin:0 0 6px">Reason</legend>
+<label class="m-radio"><input type="radio" name="reason" value="spam"> Spam</label>
+<label class="m-radio"><input type="radio" name="reason" value="harassment"> Harassment or threats</label>
+<label class="m-radio"><input type="radio" name="reason" value="impersonation"> Pretending to be someone else</label>
+<label class="m-radio"><input type="radio" name="reason" value="inappropriate"> Inappropriate content</label>
+<label class="m-radio"><input type="radio" name="reason" value="other"> Something else</label>
+</fieldset>
+<div class="m-field">
+<label for="reportDetails">Details (optional)</label>
+<textarea class="m-input m-area" id="reportDetails" maxlength="500" rows="3"></textarea>
+<div class="m-muted" id="reportCount" style="text-align:right">0 / 500</div>
+</div>
+<p class="m-muted" style="margin:0">To look into your report, we may review the recent messages in this chat.</p>
+<div class="m-msg" id="reportMsg" role="status" aria-live="polite"></div>
+<button class="m-btn" id="reportSend" type="submit">Send report</button>
+</form>
+<div class="m-card" id="reportDone" hidden>
+<div class="m-name">Thank you</div>
+<p>Your report was sent.</p>
+<button class="m-btn" id="reportBlock" type="button">Block this person</button>
+<button class="m-btn m-outline" id="reportSkip" type="button" style="margin-top:10px">Not now</button>
+</div>
 </section>
 
 <!-- Blocked people -->
@@ -311,7 +342,7 @@ function showLoaderError(text) {
 
 function showScreen(id) {
   document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("active", s.id === id));
-  const tab = (id === "chats" || id === "conversation") ? "chats" : (id === "contacts" ? "contacts" : "profile");
+  const tab = (id === "chats" || id === "conversation" || id === "report") ? "chats" : (id === "contacts" ? "contacts" : "profile");
   document.body.classList.toggle("in-chat", id === "conversation");
   document.querySelectorAll(".m-nav button").forEach((b) => {
     if (b.dataset.go === tab) b.setAttribute("aria-current", "page");
@@ -952,6 +983,75 @@ $("blockBtn").addEventListener("click", async () => {
     console.error("MIZVO block error:", error && error.code, error && error.message);
     setMsg($("convMsg"), "Could not change the block setting. Please try again.", "error");
   } finally {
+    btn.disabled = false;
+  }
+});
+
+
+// ----- Report -----
+function resetReportForm() {
+  document.querySelectorAll('input[name="reason"]').forEach((r) => { r.checked = false; });
+  $("reportDetails").value = "";
+  $("reportCount").textContent = "0 / 500";
+  setMsg($("reportMsg"), "");
+  $("reportForm").hidden = false;
+  $("reportDone").hidden = true;
+}
+$("reportBtn").addEventListener("click", () => {
+  if (!currentChat) return;
+  resetReportForm();
+  showScreen("report");
+});
+$("reportBack").addEventListener("click", () => showScreen("conversation"));
+$("reportSkip").addEventListener("click", () => showScreen("conversation"));
+$("reportDetails").addEventListener("input", () => {
+  $("reportCount").textContent = $("reportDetails").value.length + " / 500";
+});
+
+$("reportForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!currentChat) return;
+  const checked = document.querySelector('input[name="reason"]:checked');
+  const msg = $("reportMsg"), btn = $("reportSend");
+  if (!checked) { setMsg(msg, "Please choose a reason.", "error"); return; }
+  const details = $("reportDetails").value.trim();
+  if (details.length > 500) { setMsg(msg, "Details can have at most 500 characters.", "error"); return; }
+  setMsg(msg, "");
+  setBusy(btn, true);
+  try {
+    const { error } = await client.rpc("report_user", {
+      p_reported: currentChat.otherId, p_conv: currentChat.id, p_reason: checked.value, p_details: details || null
+    });
+    if (error) throw error;
+    $("reportForm").hidden = true;
+    $("reportBlock").hidden = Boolean(currentChat.blocked);
+    $("reportDone").hidden = false;
+  } catch (error) {
+    console.error("MIZVO report error:", error && error.code, error && error.message);
+    const m = (error && error.message ? error.message : "").toLowerCase();
+    let text = "Could not send your report. Please try again.";
+    if (error && error.code === "54000") text = "You have sent several reports recently. Please try again later.";
+    else if (m.indexOf("failed to fetch") !== -1 || m.indexOf("network") !== -1) text = "Network problem. Check your internet connection and try again.";
+    setMsg(msg, text, "error");
+  } finally {
+    setBusy(btn, false, "Send report");
+    btn.disabled = false;
+  }
+});
+
+$("reportBlock").addEventListener("click", async () => {
+  if (!currentChat) return;
+  const btn = $("reportBlock");
+  btn.disabled = true;
+  try {
+    const { error } = await client.from("blocks").insert({ blocker_id: me.user.id, blocked_id: currentChat.otherId });
+    if (error && error.code !== "23505") throw error;
+    currentChat.blocked = true;
+    updateBlockUI();
+    loadChats();
+    showScreen("conversation");
+  } catch (error) {
+    console.error("MIZVO block after report error:", error && error.code, error && error.message);
     btn.disabled = false;
   }
 });
