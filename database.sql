@@ -427,3 +427,90 @@ begin
   return conv;
 end;
 $$;
+
+
+-- ============================================================
+-- 7. Abuse reports (run 2026-11-14; rolled-back test passed; three real reports saved from the app)
+--    App users cannot read or write this table directly; they report through report_user().
+--    The founder reviews reports in the Supabase dashboard (Table Editor or SQL Editor).
+-- ============================================================
+create table public.reports (
+  id uuid primary key default gen_random_uuid(),
+  reporter_id uuid references auth.users (id) on delete cascade,
+  reported_id uuid references auth.users (id) on delete set null,
+  conversation_id uuid references public.conversations (id) on delete set null,
+  reason text not null,
+  details text,
+  evidence jsonb not null default '[]'::jsonb,
+  reported_name text,
+  reported_username text,
+  status text not null default 'open',
+  created_at timestamptz not null default now(),
+  constraint reports_reason_valid
+    check (reason in ('spam', 'harassment', 'impersonation', 'inappropriate', 'other')),
+  constraint reports_details_length
+    check (details is null or char_length(details) <= 500),
+  constraint reports_status_valid
+    check (status in ('open', 'reviewed', 'dismissed'))
+);
+create index reports_reporter_created_idx on public.reports (reporter_id, created_at desc);
+create index reports_status_created_idx on public.reports (status, created_at desc);
+
+-- No policies on purpose: app users can not read or write this table directly
+alter table public.reports enable row level security;
+revoke all on public.reports from anon, authenticated;
+
+create or replace function public.report_user(
+  p_reported uuid,
+  p_conv uuid,
+  p_reason text,
+  p_details text default null
+)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  me uuid := (select auth.uid());
+  ev jsonb;
+  rn text;
+  ru text;
+begin
+  if me is null then
+    raise exception 'Not signed in' using errcode = '28000';
+  end if;
+  if p_reported is null or p_reported = me then
+    raise exception 'Invalid person' using errcode = '22023';
+  end if;
+  if not exists (select 1 from public.conversation_members where conversation_id = p_conv and user_id = me)
+     or not exists (select 1 from public.conversation_members where conversation_id = p_conv and user_id = p_reported) then
+    raise exception 'Not part of this chat' using errcode = '42501';
+  end if;
+  if (select count(*) from public.reports
+        where reporter_id = me and created_at > now() - interval '1 hour') >= 5 then
+    raise exception 'Too many reports' using errcode = '54000';
+  end if;
+
+  select coalesce(
+           jsonb_agg(jsonb_build_object('sender_id', m.sender_id, 'body', m.body, 'created_at', m.created_at)
+                     order by m.created_at),
+           '[]'::jsonb)
+    into ev
+    from (select sender_id, body, created_at
+            from public.messages
+           where conversation_id = p_conv
+           order by created_at desc
+           limit 20) m;
+
+  select display_name, username into rn, ru from public.profiles where id = p_reported;
+
+  insert into public.reports
+    (reporter_id, reported_id, conversation_id, reason, details, evidence, reported_name, reported_username)
+  values
+    (me, p_reported, p_conv, p_reason, nullif(btrim(p_details), ''), ev, rn, ru);
+end;
+$$;
+
+revoke all on function public.report_user(uuid, uuid, text, text) from public, anon;
+grant execute on function public.report_user(uuid, uuid, text, text) to authenticated;

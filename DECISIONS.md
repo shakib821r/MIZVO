@@ -114,3 +114,8 @@
 
 ## D-030 — Promises in Terms and Privacy (2026-11-13, confirmed by the founder)
 - Accounts are deleted on request by email; deleting an account also deletes the messages that person sent. Not intended for children under 13 (no age check yet). Personal data is not sold. Messages are not end-to-end encrypted. Data is shared with trusted service providers. These must stay true; if any stops being true, the pages must change first.
+
+## D-031 — Abuse reporting design (2026-11-14, approved by the founder)
+- A Report button in the chat: reason (spam, harassment, impersonation, inappropriate, other) and optional details (500 characters). The report keeps a copy of the last 20 messages of that chat, because without it the founder cannot see what happened. The Privacy Policy says that recent messages may be reviewed when someone is reported.
+- App users cannot read the reports table at all (it holds other people's messages); only the founder reads it in the Supabase dashboard. At most 5 reports per hour per person. After reporting, the app offers to block.
+- No automatic punishment: the founder reviews and, if needed, removes the account (Authentication → Users → Delete user).

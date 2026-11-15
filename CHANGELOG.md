@@ -1,5 +1,11 @@
 # MIZVO — Changelog
 
+## 2026-11-15
+- Abuse reports (tested by the founder; three real reports were saved with their message copies):
+  - Database: table `reports` (reason, details up to 500 characters, copy of the last 20 messages as evidence, name and username of the reported person at that time, status open / reviewed / dismissed) with Row Level Security and no client permissions; function `report_user` (checks both people are in the chat, at most 5 reports per hour). Script recorded in `database.sql`, section 7.
+  - `index.html` (1176 lines): Report button in the chat, Report screen (reason, optional details, note that recent messages may be reviewed), thank-you card with an offer to block. `mizvo.css`: radio styles. `privacy.html`: one sentence about reviewing recent messages when someone is reported.
+- Email templates for "Confirm sign up" and "Reset password" were replaced in the Supabase dashboard; the founder reported that the test email arrived in the inbox and the link works.
+
 ## 2026-11-13
 - Rate limits (database, run by the founder, rolled-back test passed): trigger `messages_limit_rate` (10 messages per 10 seconds, 600 per hour per sender); new chats limited to 20 per hour per person in `start_direct_chat` (new column `conversations.created_by`, two indexes). `index.html` (1076 lines) shows "You are sending messages too fast..." and "You have started too many new chats...".
 - The founder confirmed the promises in Terms and Privacy (see PROJECT_CONTEXT, Open risks). `database.sql` now records the rate-limit script.

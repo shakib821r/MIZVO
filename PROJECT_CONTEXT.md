@@ -36,11 +36,11 @@ Last updated: 2026-11-13
 - Redesign Stage 5 (2026-11-08): auth screens (6 tests), Show/Hide for both password fields, plain Terms and Privacy text, reset.html (4 tests), app shell (6 tests), Contacts and choose/change @username (7 tests), Edit profile, Settings and QR code, and messaging with Block (6 messaging tests and 4 block tests) — all reported OK.
 
 ### Pending (before real users)
-1. Better confirmation and reset email templates (free; may reduce Spam placement)
-2. A way for users to report abuse, and a process for the founder to review reports
-3. A routine for exporting data (free Supabase projects have no automatic point-in-time backup) and keeping the project active
-4. A knowledgeable review of Terms and Privacy (the founder confirmed the promises below)
-5. Later: reporting abusive users with a review process, message deletion, read receipts, notifications, media, groups
+1. A routine for exporting data (free Supabase projects have no automatic point-in-time backup) and keeping the project active
+2. A knowledgeable review of Terms and Privacy (the founder confirmed the promises below)
+3. A pre-launch checklist walk-through
+4. Later: message deletion, read receipts, notifications, media, groups
+- Done recently: better email templates (inbox delivery reported 2026-11-14); abuse reporting (2026-11-15).
 - Optional: domain-based email sending (needs a purchased domain and the founder's approval); bot protection on sign-up; self-host fonts; pin the Supabase library version
 
 ### Open risks
@@ -56,6 +56,9 @@ Last updated: 2026-11-13
 - Delete an account on request: Supabase dashboard → Authentication → Users → the person's row → Delete user. This also deletes their profile, chat memberships and the messages they sent, so those messages disappear for the other person too (founder accepted this on 2026-11-13).
 - Keep the project active: open the project in the dashboard now and then; real use also counts. If it is paused, open the dashboard and choose Resume project.
 - Export data from time to time (free projects have no automatic point-in-time backup).
+- Review reports: Supabase → Table Editor → `reports`, or in the SQL Editor (role `postgres`):
+  `select id, created_at, status, reason, details, reported_username, jsonb_array_length(evidence) as messages, evidence from public.reports where status = 'open' order by created_at;`
+  After deciding: `update public.reports set status = 'reviewed' where id = '<report id>';` (or `'dismissed'`). To remove an abusive account: Authentication → Users → Delete user (this also deletes the messages that person sent). Reports hold private messages: do not share them.
 
 ## Public information shown in the app
 - Founder name "Md Nazmus Shakib", title "Founder & CEO", portrait photo (approved by the founder to be public).

@@ -56,3 +56,9 @@
 - Cause: the first messaging permissions let a signed-in person insert a value for `created_at`, so someone could place messages in the past or future and distort ordering and unread counts.
 - Fix: insert permission is limited to `conversation_id`, `sender_id` and `body` (same for blocks); "mark as read" uses the server clock through `mark_chat_read`.
 - Check: a rolled-back test confirmed that setting the time is refused.
+
+## BUG-011 — Early checks of the reports table showed it empty (2026-11-14 to 2026-11-15, cause unknown)
+- Status: Not explained; the feature itself works.
+- What happened: two checks in the SQL Editor right after the first reports returned no rows (one "no rows returned", one count of 0), although the app had been told "report sent" and the API log showed two successful calls (status 204). Later the same table listed three reports with their message copies, and the Table Editor showed them.
+- Not known whether this was timing, a different editor session or something else. Not proven.
+- What to do if it happens again: check with `select current_user` (should be `postgres`) and look at the table in Table Editor; compare with Logs → API for `/rest/v1/rpc/report_user`.

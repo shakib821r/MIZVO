@@ -12,16 +12,16 @@
 9. Profile Identity Card: Edit profile, Settings, My QR code with scan-to-open links — reported working by the founder (2026-11-08)
 10. One-to-one messaging with unread badges, real-time delivery and Block — tested by the founder with two accounts (2026-11-09)
 11. Message and new-chat rate limits — database test passed (2026-11-13)
+12. Better email templates for sign-up confirmation and password reset — founder reported inbox delivery and working links (2026-11-14)
+13. Abuse reporting (Report button, `reports` table with message copies, founder review) — tested; three real reports saved (2026-11-15)
 
 ## Next (steps are given three at a time)
-- Better email templates for confirmation and password reset (free; may reduce Spam placement)
-- Abuse reporting: a Report button, a table of reports and a review routine
 - Data export routine and keeping the project active
-- A knowledgeable review of Terms and Privacy
+- A knowledgeable review of Terms and Privacy (the founder looks for someone; free)
+- A pre-launch checklist walk-through
 - Then: message deletion, read receipts, notifications (each needs its own plan)
 
 ## Optional / later (needs planning and approval)
-- Improve the confirmation and reset email templates (free, may reduce spam placement)
 - Domain-based email sending such as Brevo (a domain costs money; needs approval)
 - Avatar photo upload (Supabase Storage, free tier 1 GB — confirm limits)
 - Delete account (needs a server function), push notifications, group chats, media sharing, voice messages, calling (check feasibility within ৳0)
