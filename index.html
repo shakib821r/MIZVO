@@ -159,6 +159,33 @@
 </div>
 </section>
 
+<!-- Delete account -->
+<section id="deleteaccount" class="screen" aria-labelledby="deleteTitle">
+<button class="m-back" type="button" id="deleteBack">&larr; Back to Settings</button>
+<h1 class="m-h1" id="deleteTitle">Delete your account</h1>
+<div class="m-card">
+<div class="m-name" style="font-size:16px">This cannot be undone.</div>
+<ul class="m-warn">
+<li>Your profile, @username and status are deleted.</li>
+<li>The messages you sent are deleted, and your chats are removed for the other people too.</li>
+<li>Reports you made are deleted. Reports that others made about you may be kept for safety.</li>
+<li>You are signed out on all your devices.</li>
+</ul>
+</div>
+<form id="deleteForm" novalidate style="display:flex;flex-direction:column;gap:14px">
+<div class="m-field">
+<label for="deletePw">Your password</label>
+<input class="m-input" id="deletePw" type="password" autocomplete="current-password">
+</div>
+<div class="m-field">
+<label for="deleteWord">Type DELETE to confirm</label>
+<input class="m-input" id="deleteWord" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false">
+</div>
+<div class="m-msg" id="deleteMsg" role="status" aria-live="polite"></div>
+<button class="m-btn m-danger-btn" id="deleteGo" type="submit">Delete my account permanently</button>
+</form>
+</section>
+
 <!-- Blocked people -->
 <section id="blocked" class="screen" aria-labelledby="blockedTitle">
 <button class="m-back" type="button" id="blockedBack">&larr; Back to Settings</button>
@@ -244,13 +271,13 @@
 <button class="m-btn" id="pwSave" type="submit">Update password</button>
 </form>
 <button class="m-rowbtn" type="button" id="blockedBtn"><span>Blocked people</span><span aria-hidden="true">&rsaquo;</span></button>
+<button class="m-rowbtn m-danger" type="button" id="deleteBtn">Delete account</button>
 <button class="m-rowbtn" type="button" id="signOutAll"><span>Sign out of all devices</span><span aria-hidden="true">&rsaquo;</span></button>
 <div class="m-msg" id="settingsMsg" role="status" aria-live="polite"></div>
 
 <div class="m-label">Not available yet</div>
 <div class="m-card" style="padding-top:4px;padding-bottom:4px">
 <div class="m-later"><span>Notifications</span><span>Available when messaging launches</span></div>
-<div class="m-later"><span>Delete account</span><span>Planned for later</span></div>
 </div>
 </section>
 
@@ -1052,6 +1079,49 @@ $("reportBlock").addEventListener("click", async () => {
     showScreen("conversation");
   } catch (error) {
     console.error("MIZVO block after report error:", error && error.code, error && error.message);
+    btn.disabled = false;
+  }
+});
+
+
+// ----- Delete my account -----
+$("deleteBtn").addEventListener("click", () => {
+  $("deletePw").value = "";
+  $("deleteWord").value = "";
+  setMsg($("deleteMsg"), "");
+  showScreen("deleteaccount");
+});
+$("deleteBack").addEventListener("click", () => showScreen("settings"));
+
+$("deleteForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = $("deleteMsg"), btn = $("deleteGo");
+  const password = $("deletePw").value;
+  if (!password) { setMsg(msg, "Please enter your password.", "error"); return; }
+  if ($("deleteWord").value.trim() !== "DELETE") { setMsg(msg, "Please type DELETE (capital letters) to confirm.", "error"); return; }
+  setMsg(msg, "");
+  setBusy(btn, true);
+  try {
+    // Sign in again first: proves it is really you and gives a fresh login
+    const signIn = await client.auth.signInWithPassword({ email: me.user.email, password: password });
+    if (signIn.error) {
+      const m = (signIn.error.message || "").toLowerCase();
+      setMsg(msg, m.indexOf("invalid login credentials") !== -1 ? "Wrong password. Please try again." : "Could not check your password. Please try again.", "error");
+      return;
+    }
+    const { error } = await client.rpc("delete_my_account", { p_confirm: "DELETE" });
+    if (error) throw error;
+    try { await client.auth.signOut({ scope: "local" }); } catch (e) {}
+    window.location.replace("auth.html#account-deleted");
+  } catch (error) {
+    console.error("MIZVO delete account error:", error && error.code, error && error.message);
+    const m = (error && error.message ? error.message : "").toLowerCase();
+    let text = "Could not delete your account. Please try again.";
+    if (error && error.code === "42501") text = "For security, please log out, sign in again, and then try again.";
+    else if (m.indexOf("failed to fetch") !== -1 || m.indexOf("network") !== -1) text = "Network problem. Check your internet connection and try again.";
+    setMsg(msg, text, "error");
+  } finally {
+    setBusy(btn, false, "Delete my account permanently");
     btn.disabled = false;
   }
 });

@@ -256,6 +256,8 @@ if (window.location.hash === "#forgot") {
   setMode("signup");
 } else if (window.location.hash === "#password-updated") {
   showMsg("Password updated. Please sign in with your new password.");
+} else if (window.location.hash === "#account-deleted") {
+  showMsg("Your account was deleted.");
 }
 if (window.location.hash) {
   try { history.replaceState(null, "", window.location.pathname); } catch (e) {}
