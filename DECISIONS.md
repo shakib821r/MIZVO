@@ -119,3 +119,15 @@
 - A Report button in the chat: reason (spam, harassment, impersonation, inappropriate, other) and optional details (500 characters). The report keeps a copy of the last 20 messages of that chat, because without it the founder cannot see what happened. The Privacy Policy says that recent messages may be reviewed when someone is reported.
 - App users cannot read the reports table at all (it holds other people's messages); only the founder reads it in the Supabase dashboard. At most 5 reports per hour per person. After reporting, the app offers to block.
 - No automatic punishment: the founder reviews and, if needed, removes the account (Authentication → Users → Delete user).
+
+## D-032 — Self-service account deletion (2026-11-16, approved by the founder)
+- The founder cannot review deletion requests by email regularly, so people delete their own account in Settings. They must enter the password again (the app signs in again first), type DELETE, and the server only accepts a sign-in that is at most 10 minutes old.
+- A database function with elevated rights deletes the login row; the delete rules remove the person's data. Chats left with fewer than two people are removed, so the other person's copy of that chat disappears too (said on the screen and in the Privacy Policy).
+- Reports about a deleted person are kept for safety, with the link to the account removed (the Privacy Policy says so). Reports the person made are deleted.
+- The method (deleting from `auth.users` inside a function) comes from community sources, not an official Supabase API; it was verified by a rolled-back test and by deleting a real test account.
+
+## D-033 — Open launch, in waves; auth limits raised (2026-11-16, founder's choice)
+- The founder chose an open launch (no invite-only beta) and expects about 499 users. Advice given: spread the promotion over several days because of the email limits (Supabase 60 per hour now; Gmail about 500 per day, unverified).
+- Dashboard limits changed: emails 60 per hour, sign-ups and sign-ins 100 per 5 minutes (people on mobile networks share addresses). Other limits unchanged.
+- Bot protection (CAPTCHA) on sign-up, sign-in and password reset is the next recommended step, because bots could use up the daily email allowance.
+

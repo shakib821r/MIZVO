@@ -1,5 +1,11 @@
 # MIZVO — Changelog
 
+## 2026-11-16
+- Delete my account (tested by the founder on a real test account):
+  - Database: function `delete_my_account(p_confirm)` (needs the word DELETE and a sign-in at most 10 minutes old); recorded in `database.sql`, section 8. A rolled-back test and a real deletion both passed: the person's profile, memberships and sent messages were removed, their chat disappeared for the other person, reports about them were kept with `reported_id` empty.
+  - `index.html` (1246 lines): Settings → red "Delete account" row; new screen listing what will be deleted, asking for the password (the app signs in again first) and the word DELETE. `auth.html` (277 lines): message "Your account was deleted." `privacy.html`: text about deleting the account in the app and about reports being kept for safety. `mizvo.css`: small styles.
+- Supabase dashboard, Authentication → Rate Limits: emails per hour 30 → 60; sign-ups and sign-ins per 5 minutes 30 → 100 (the founder expects about 499 users).
+
 ## 2026-11-15
 - Abuse reports (tested by the founder; three real reports were saved with their message copies):
   - Database: table `reports` (reason, details up to 500 characters, copy of the last 20 messages as evidence, name and username of the reported person at that time, status open / reviewed / dismissed) with Row Level Security and no client permissions; function `report_user` (checks both people are in the chat, at most 5 reports per hour). Script recorded in `database.sql`, section 7.

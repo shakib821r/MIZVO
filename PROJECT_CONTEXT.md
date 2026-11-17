@@ -36,14 +36,15 @@ Last updated: 2026-11-13
 - Redesign Stage 5 (2026-11-08): auth screens (6 tests), Show/Hide for both password fields, plain Terms and Privacy text, reset.html (4 tests), app shell (6 tests), Contacts and choose/change @username (7 tests), Edit profile, Settings and QR code, and messaging with Block (6 messaging tests and 4 block tests) — all reported OK.
 
 ### Pending (before real users)
-1. A routine for exporting data (free Supabase projects have no automatic point-in-time backup) and keeping the project active
-2. A knowledgeable review of Terms and Privacy (the founder confirmed the promises below)
-3. A pre-launch checklist walk-through
+1. Bot protection (CAPTCHA, Cloudflare Turnstile) on sign-up, sign-in and password reset — recommended because bots could use up the daily email allowance
+2. A staged launch plan (waves) and the founder's weekly 15-minute routine (reports, usage, support email)
+3. Trademark: a free search in the WIPO brand database found nothing for "mizvo"; this is not clearance, and Bangladesh coverage is unknown
 4. Later: message deletion, read receipts, notifications, media, groups
-- Done recently: better email templates (inbox delivery reported 2026-11-14); abuse reporting (2026-11-15).
-- Optional: domain-based email sending (needs a purchased domain and the founder's approval); bot protection on sign-up; self-host fonts; pin the Supabase library version
+- Done recently: better email templates (2026-11-14); abuse reporting (2026-11-15); self-service account deletion and higher Auth rate limits (2026-11-16); data exported once to CSV.
+- Optional: domain-based email sending (needs a purchased domain and the founder's approval; the founder may buy a paid plan later); self-host fonts; pin the Supabase library version
 
 ### Open risks
+- No CAPTCHA yet: bots could create junk accounts and use up the email allowance (Gmail about 500 per day, unverified).
 - Auth emails can land in Spam (BUG-007); Gmail is a personal mail service with a daily cap (about 500 per day per a third-party source, not verified).
 - Supabase free projects are paused when they get too little database activity over 7 days; the owner gets a warning email about a week before; a paused project is resumed from the dashboard (BUG-009; Supabase's own page, its restore-window wording differs between its pages).
 - Terms and Privacy are drafts. The founder confirmed (2026-11-13) that he can keep these promises: deleting an account on request by email, not for children under 13, no selling of personal data, messages not end-to-end encrypted, sharing with trusted service providers. A knowledgeable review is still advised before real users.
@@ -53,7 +54,7 @@ Last updated: 2026-11-13
 - Free Supabase projects have no point-in-time backup; export data from time to time.
 
 ## Operations (the founder's manual tasks)
-- Delete an account on request: Supabase dashboard → Authentication → Users → the person's row → Delete user. This also deletes their profile, chat memberships and the messages they sent, so those messages disappear for the other person too (founder accepted this on 2026-11-13).
+- Account deletion: people delete their own account in the app (Settings → Delete account). To remove an abusive account yourself: Supabase dashboard → Authentication → Users → the person's row → Delete user (this also deletes their profile, chat memberships and the messages they sent, so chats with them disappear for the other person too).
 - Keep the project active: open the project in the dashboard now and then; real use also counts. If it is paused, open the dashboard and choose Resume project.
 - Export data from time to time (free projects have no automatic point-in-time backup).
 - Review reports: Supabase → Table Editor → `reports`, or in the SQL Editor (role `postgres`):

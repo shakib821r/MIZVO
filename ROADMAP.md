@@ -14,15 +14,15 @@
 11. Message and new-chat rate limits — database test passed (2026-11-13)
 12. Better email templates for sign-up confirmation and password reset — founder reported inbox delivery and working links (2026-11-14)
 13. Abuse reporting (Report button, `reports` table with message copies, founder review) — tested; three real reports saved (2026-11-15)
+14. Self-service "Delete my account" — tested on a real test account (2026-11-16)
 
 ## Next (steps are given three at a time)
-- Data export routine and keeping the project active
-- A knowledgeable review of Terms and Privacy (the founder looks for someone; free)
-- A pre-launch checklist walk-through
+- Bot protection (CAPTCHA, Cloudflare Turnstile) on sign-up, sign-in and password reset
+- A staged launch plan (waves) with a weekly 15-minute routine for the founder
 - Then: message deletion, read receipts, notifications (each needs its own plan)
 
 ## Optional / later (needs planning and approval)
 - Domain-based email sending such as Brevo (a domain costs money; needs approval)
 - Avatar photo upload (Supabase Storage, free tier 1 GB — confirm limits)
-- Delete account (needs a server function), push notifications, group chats, media sharing, voice messages, calling (check feasibility within ৳0)
+- Push notifications, group chats, media sharing, voice messages, calling (check feasibility within ৳0)
 - Self-host the fonts; pin the Supabase library to an exact version; stronger password rules (Supabase setting)

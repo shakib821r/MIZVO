@@ -514,3 +514,48 @@ $$;
 
 revoke all on function public.report_user(uuid, uuid, text, text) from public, anon;
 grant execute on function public.report_user(uuid, uuid, text, text) to authenticated;
+
+
+-- ============================================================
+-- 8. Delete my account (run 2026-11-16; rolled-back test passed; real deletion of a test account worked)
+--    A signed-in person can delete their own account. The sign-in must be at most 10 minutes old.
+--    Deleting the login removes (by the delete rules): profile, chat memberships, blocks, sent messages,
+--    and reports made by the person. Reports about the person are kept with reported_id set to null.
+--    Chats left with fewer than two people are removed.
+--    Note: deleting from auth.users inside a function is a community-documented method, not an official
+--    Supabase API. It was verified by the tests above.
+-- ============================================================
+create or replace function public.delete_my_account(p_confirm text)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  me uuid := (select auth.uid());
+  issued bigint;
+begin
+  if me is null then
+    raise exception 'Not signed in' using errcode = '28000';
+  end if;
+  if p_confirm is distinct from 'DELETE' then
+    raise exception 'Confirmation word is wrong' using errcode = '22023';
+  end if;
+
+  -- The sign-in must be recent (10 minutes), so an old stolen session cannot delete an account
+  issued := nullif((select auth.jwt() ->> 'iat'), '')::bigint;
+  if issued is null or extract(epoch from now()) - issued > 600 then
+    raise exception 'Please sign in again' using errcode = '42501';
+  end if;
+
+  delete from auth.users where id = me;
+
+  -- Remove chats that now have fewer than two people
+  delete from public.conversations c
+   where (select count(*) from public.conversation_members m where m.conversation_id = c.id) < 2;
+end;
+$$;
+
+revoke all on function public.delete_my_account(text) from public, anon;
+grant execute on function public.delete_my_account(text) to authenticated;
+
